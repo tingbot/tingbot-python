@@ -7,12 +7,8 @@ try:
 except ImportError:
     from distutils.core import setup
 
-
 with open('README.rst') as readme_file:
     readme = readme_file.read()
-
-with open('HISTORY.rst') as history_file:
-    history = history_file.read().replace('.. :changelog:', '')
 
 requirements = [
     # TODO: put package requirements here
@@ -26,7 +22,7 @@ setup(
     name='tingbot',
     version='0.2.3',
     description="Python APIs to write apps for Tingbot",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author="Joe Rickerby",
     author_email='joerick@mac.com',
     url='https://github.com/joerick/tingbot',

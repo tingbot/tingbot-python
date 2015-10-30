@@ -1,5 +1,4 @@
 import os
-import RPi.GPIO as GPIO
 
 
 def fixup_env():
@@ -47,6 +46,8 @@ button_pin_to_index = {
 }
 
 def button_setup():
+    import RPi.GPIO as GPIO
+    
     GPIO.setmode(GPIO.BOARD)
     GPIO.setwarnings(False)
 
@@ -55,6 +56,8 @@ def button_setup():
         GPIO.add_event_detect(button_pin, GPIO.BOTH, bouncetime=200, callback=GPIO_callback)
 
 def GPIO_callback(pin):
+    import RPi.GPIO as GPIO
+
     button_index = button_pin_to_index[pin]
     action = 'down' if GPIO.input(pin) else 'up'
 

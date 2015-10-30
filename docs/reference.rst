@@ -1,8 +1,8 @@
 Reference
 =========
 
-``screen``
-----------
+Screen
+------
 
 .. py:function:: screen.fill(color)
 
@@ -88,3 +88,108 @@ Reference
         :caption: Example: Drawing an Image
         
         screen.image('tingbot.png', xy=(25,25))
+
+Touch
+-----
+
+Your Tingbot comes equipped with a resistive touch screen! It's easy to react to touch events.
+
+.. code-block:: python
+    :caption: Example: Simple drawing app
+
+    import tingbot
+    from tingbot import *
+
+    screen.fill(color='black')
+
+    @touch()
+    def on_touch(xy):
+        screen.rectangle(xy=xy, size=(5,5), color='blue')
+
+    tingbot.run()
+
+This is a simple drawing app. It uses the ``@touch()`` decorator to receive touch events and draws a
+rectangle to the screen at the same place.
+
+.. py:decorator:: touch(xy=…, size=…, align=…)
+
+    This 'decorator' marks the function after it to receive touch events. 
+
+    You can optionally pass an area that you're interested in, using the ``xy``, ``size`` and
+    ``align`` arguments. If you specify no area, you will receive all touch events.
+
+    The handler function can optionally take the arguments ``xy`` and ``action``. ``xy`` is the
+    location of the touch. ``action`` is one of 'down', 'move', 'up'.
+
+    .. code-block:: python
+        :caption: Example: Simple Drawing app
+
+        @touch()
+        def on_touch(xy):
+            screen.rectangle(xy=xy, size=(5,5), color='blue')
+
+    .. code-block:: python
+        :caption: Example: Making a button do something
+
+        @touch(xy=(0,0), size=(100,50), align='topleft')
+        def on_touch(xy, action):
+            if action == 'down':
+                state['screen_number'] = 2
+
+Buttons
+-------
+
+There are four buttons on the top of the Tingbot. These can be used in programs to trigger functions in your code.
+
+.. code-block:: python
+    :caption: Example: Score-keeping app.
+
+    import tingbot
+    from tingbot import *
+
+    state = {'score': 0}
+
+    @button.press('left')
+    def on_left():
+        state['score'] -= 1
+
+    @button.press('right')
+    def on_right():
+        state['score'] += 1
+
+    def loop():
+        screen.fill(
+            color='black')
+        screen.text(
+            state['score'],
+            color='white')
+
+    tingbot.run(loop)
+
+This is a simple counter program. Whenever the right button is pressed, the score goes up by one. On
+the left button, the score goes down.
+
+.. py:decorator:: button.press(button_name…)
+
+    This 'decorator' marks the function to be called when a button is pressed.
+
+    ``button_name`` can be one of: left, mid_left, mid_right, right.
+        
+    The function is called when the button is pressed. Nothing happens when the button is released.
+
+    .. code-block:: python
+        :caption: Example: Button handler
+
+        @button.press('left')
+        def on_left():
+            state['score'] -= 1
+
+    .. code-block:: python
+        :caption: Example: Button handler for all buttons
+
+        @button.press('left')
+        @button.press('midleft')
+        @button.press('midright')
+        @button.press('right')
+        def on_button():
+            state['score'] -= 1

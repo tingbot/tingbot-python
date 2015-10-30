@@ -21,3 +21,6 @@ def run(loop=None):
     main_run_loop.run()
 
 __all__ = ['run', 'screen', 'Surface', 'Image', 'every', 'touch', 'press', 'button']
+__author__ = 'Joe Rickerby'
+__email__ = 'joerick@mac.com'
+__version__ = '0.2.3'

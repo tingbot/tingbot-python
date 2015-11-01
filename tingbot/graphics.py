@@ -142,7 +142,7 @@ class Surface(object):
 
     def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None):
         font, antialias = _font(font, font_size, antialias)
-        string = str(string)
+        string = unicode(string)
 
         if antialias is None:
             antialias

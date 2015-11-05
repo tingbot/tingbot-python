@@ -69,7 +69,7 @@ Screen
     .. code-block:: python
         :caption: Example: Drawing centered
 
-        screen.text(xy=(160,120), size=(100,100), color=(255,0,0), align='center')
+        screen.rectangle(xy=(160,120), size=(100,100), color=(255,0,0), align='center')
 
 
 .. py:function:: screen.image(filename…, xy=…, scale=…, align=…)
@@ -173,7 +173,7 @@ the left button, the score goes down.
 
     This 'decorator' marks the function to be called when a button is pressed.
 
-    ``button_name`` can be one of: left, mid_left, mid_right, right.
+    ``button_name`` can be one of: left, midleft, midright, right.
         
     The function is called when the button is pressed. Nothing happens when the button is released.
 

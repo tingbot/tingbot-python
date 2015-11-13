@@ -4,6 +4,7 @@ from .graphics import screen, Surface, Image
 from .run_loop import main_run_loop, every
 from .input import touch
 from .button import press
+from .web import webhook
 
 platform_specific.fixup_env()
 
@@ -20,7 +21,7 @@ def run(loop=None):
 
     main_run_loop.run()
 
-__all__ = ['run', 'screen', 'Surface', 'Image', 'every', 'touch', 'press', 'button']
+__all__ = ['run', 'screen', 'Surface', 'Image', 'every', 'touch', 'press', 'button', 'webhook']
 __author__ = 'Joe Rickerby'
 __email__ = 'joerick@mac.com'
 __version__ = '0.3'

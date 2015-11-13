@@ -3,9 +3,9 @@ import zmq
 class webhook(object):
     def __init__(self, hook_name):
         ensure_setup()
-        
+
         self.hook_name = hook_name
-    
+
     def __call__(self, f):
         register_webhook(self.hook_name, f)
         return f
@@ -22,11 +22,11 @@ def ensure_setup():
 
 def setup():
     global zmq_subscriber
-    
+
     ctx = zmq.Context.instance()
     zmq_subscriber = ctx.socket(zmq.SUB)
     zmq_subscriber.connect("tcp://webhook.tingbot.com:20452")
-    
+
     from tingbot.run_loop import main_run_loop
     main_run_loop.add_wait_callback(run_loop_wait)
 
@@ -44,7 +44,7 @@ def run_loop_wait():
             raise
     else:
         from tingbot.utils import call_with_optional_arguments
-        
+
         if topic in registered_webhooks:
             callback = registered_webhooks[topic]
-            call_with_optional_arguments(callback, post_data=data)
+            call_with_optional_arguments(callback, data=data)

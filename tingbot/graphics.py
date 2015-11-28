@@ -153,8 +153,6 @@ class Surface(object):
         realXY = _xy_multiply(xy, _anchor(align))
 
         if((text_image.size[0] + realXY[0] > 320) and auto_word_wrap):
-            print(text_image.size[0] + realXY[0])
-            print(text_image.size[0])
             lines = int(math.ceil((text_image.size[0] + realXY[0])/320.0))
             words = string.split()
             count = 0
@@ -168,9 +166,10 @@ class Surface(object):
                     lineStr += words[count] + " "
                     count += 1
                 self.text(lineStr, xy=(xy[0], xy[1]+line*text_image.size[1]), color=color, align=align, font_size=font_size)
-            return lines * xy[1]
+            return (text_image.size[0],  lines * text_image.size[1])
 
         self.image(text_image, xy, align=align)
+        return text_image.size
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
         if len(size) != 2:
@@ -226,8 +225,9 @@ class Screen(Surface):
         self.needs_update = True
 
     def text(self, *args, **kwargs):
-        super(Screen, self).text(*args, **kwargs)
+        size = super(Screen, self).text(*args, **kwargs)
         self.needs_update = True
+        return size
 
     def rectangle(self, *args, **kwargs):
         super(Screen, self).rectangle(*args, **kwargs)

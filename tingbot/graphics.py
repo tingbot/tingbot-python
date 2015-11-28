@@ -1,5 +1,6 @@
 import os, time, numbers
 import pygame
+import math
 from . import platform_specific
 from .utils import cached_property
 
@@ -140,7 +141,7 @@ class Surface(object):
     def fill(self, color):
         self.surface.fill(_color(color))
 
-    def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None):
+    def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None, auto_word_wrap = True):
         font, antialias = _font(font, font_size, antialias)
         string = unicode(string)
 
@@ -148,6 +149,26 @@ class Surface(object):
             antialias
 
         text_image = Image(surface=font.render(string, antialias, _color(color)))
+
+        realXY = _xy_multiply(xy, _anchor(align))
+
+        if((text_image.size[0] + realXY[0] > 320) and auto_word_wrap):
+            print(text_image.size[0] + realXY[0])
+            print(text_image.size[0])
+            lines = int(math.ceil((text_image.size[0] + realXY[0])/320.0))
+            words = string.split()
+            count = 0
+            for line in range(0,lines) :
+                lineStr = ""
+                possibleStr = ""
+                while count <= len(words)-1:
+                    possibleStr += words[count] + " "
+                    if(len(possibleStr) >= 55) :
+                        break
+                    lineStr += words[count] + " "
+                    count += 1
+                self.text(lineStr, xy=(xy[0], xy[1]+line*text_image.size[1]), color=color, align=align, font_size=font_size)
+            return lines * xy[1]
 
         self.image(text_image, xy, align=align)
 

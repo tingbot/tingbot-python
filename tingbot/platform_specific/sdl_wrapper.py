@@ -1,10 +1,54 @@
+import pygame
+import os
+from ..graphics import Surface,color_map
+
+button_callback = None
+
+class Wrapper(Surface):
+    def __init__(self):
+        self.surface = pygame.display.set_mode((470, 353))
+        background = pygame.image.load(os.path.join(os.path.dirname(__file__), 'bot.png'))
+        self.surface.blit(background,(0,0))
+        self.screen = self.surface.subsurface((60,40,320,240))
+        xPositions = (60, 100, 320, 360)
+        self.buttons = []
+        for x in range(4):
+            self.buttons.append(Button(self.surface.subsurface(xPositions[x],0,22,12),x))
+
+    def get_screen(self):
+        return self.screen
+
+
+class Button(Surface):
+    def __init__(self,surface,number):
+        from ..input import hit_areas,HitArea
+        self.number = number
+        surface.fill(color_map['white'])
+        #register our button as something clickable
+        self.surface = surface
+        hit_areas.append(HitArea(pygame.Rect(surface.get_abs_offset(),surface.get_size()),False,self.click))
+
+    def click(self,xy,action):
+        if action=='down':
+            (w,h) = self.surface.get_size()
+            self.surface.fill((0,0,0,0),(0,0,w,h*0.2))
+            self.surface.fill(color_map['white'],(0,h*0.2,w,h))
+            if button_callback:
+                button_callback(self.number,'down')
+        elif action=='up':
+            self.surface.fill(color_map['white'])
+            if button_callback:
+                button_callback(self.number,'up')
+
+
 def fixup_window():
-    pass
+    pygame.init()
+    wrapper = Wrapper()
+    return wrapper.get_screen()
 
 def fixup_env():
     pass
     
-button_callback = None
 
 
 def register_button_callback(callback):
@@ -19,7 +63,4 @@ def register_button_callback(callback):
     '''
     global button_callback
     button_callback = callback
-    
-def get_button_callback():
-    global button_callback
-    return button_callback
+

@@ -136,6 +136,9 @@ class WindowController(object):
 window_controller = None
 
 def fixup_window():
+    pygame.init()
+    surface = pygame.display.set_mode((320, 240))
+
     SDL_QuartzWindow = objc.lookUpClass('SDL_QuartzWindow')
 
     class SDL_QuartzWindow(objc.Category(SDL_QuartzWindow)):
@@ -156,6 +159,7 @@ def fixup_window():
 
     global window_controller
     window_controller = WindowController()
+    return surface
 
 
 def fixup_env():

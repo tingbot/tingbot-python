@@ -1,6 +1,5 @@
 import os, time, numbers
 import pygame
-from . import platform_specific
 from .utils import cached_property
 
 # colors from http://clrs.cc/
@@ -180,44 +179,6 @@ class Surface(object):
 
         self.surface.blit(surface, xy)
 
-class Wrapper(Surface):
-    def __init__(self):
-        pygame.init()
-        self.surface = pygame.display.set_mode((470, 353))
-        platform_specific.fixup_window()
-        background = pygame.image.load(os.path.join(os.path.dirname(__file__),'platform_specific', 'bot.png'))
-        self.surface.blit(background,(0,0))
-        self.screen = self.surface.subsurface((60,40,320,240))
-        xPositions = (60, 100, 320, 360)
-        self.buttons = []
-        for x in range(4):
-            self.buttons.append(Button(self.surface.subsurface(xPositions[x],0,22,12),x))
-
-    def get_screen(self):
-        return self.screen
-
-
-class Button(Surface):
-    def __init__(self,surface,number):
-        from .input import hit_areas,HitArea
-        self.number = number
-        surface.fill(color_map['white'])
-        #register our button as something clickable
-        self.surface = surface
-        hit_areas.append(HitArea(pygame.Rect(surface.get_abs_offset(),surface.get_size()),False,self.click))
-
-    def click(self,xy,action):
-        callback = platform_specific.get_button_callback()
-        if action=='down':
-            (w,h) = self.surface.get_size()
-            self.surface.fill((0,0,0,0),(0,0,w,h*0.2))
-            self.surface.fill(color_map['white'],(0,h*0.2,w,h))
-            if callback:
-                callback(self.number,'down')
-        elif action=='up':
-            self.surface.fill(color_map['white'])
-            if callback:
-                callback(self.number,'up')
 
 class Screen(Surface):
     def __init__(self):
@@ -225,15 +186,9 @@ class Screen(Surface):
         self.needs_update = False
 
     def _create_surface(self):
-        if platform_specific.use_wrapper:
-            self.wrapper = Wrapper()
-            surface = self.wrapper.get_screen()
-            return surface
-        else:
-            pygame.init()
-            surface = pygame.display.set_mode((320, 240))
-            platform_specific.fixup_window()
-            return surface
+        from . import platform_specific
+        surface = platform_specific.fixup_window()
+        return surface
 
     def ensure_display_setup(self):
         # setup pygame.display by calling the self.surface getter

@@ -14,5 +14,5 @@ elif is_tingbot():
     from pi import fixup_env, fixup_window, register_button_callback
 else:
     use_wrapper = True
-    from linux import fixup_env, fixup_window, register_button_callback, get_button_callback
+    from sdl_wrapper import fixup_env, fixup_window, register_button_callback, get_button_callback
 

@@ -8,7 +8,7 @@ mouse_down = False
 hit_areas = []
 active_hit_areas = []
 
-HitArea = namedtuple('HitArea', ('rect', 'relative', 'callback'))
+HitArea = namedtuple('HitArea', ('rect', 'callback'))
 
 def poll():
     if not pygame.display.get_init():
@@ -34,33 +34,18 @@ def poll():
             sys.exit()
 
 def mouse_down(pos):
-    from .graphics import screen, _xy_subtract
     for hit_area in hit_areas:
         if hit_area.rect.collidepoint(pos):
             active_hit_areas.append(hit_area)
-            if hit_area.relative:
-                temp_pos = _xy_subtract(pos,screen.surface.get_abs_offset())
-            else:
-                temp_pos = pos
-            call_with_optional_arguments(hit_area.callback, xy=temp_pos, action='down')
+            call_with_optional_arguments(hit_area.callback, xy=pos, action='down')
 
 def mouse_move(pos):
-    from .graphics import screen, _xy_subtract
     for hit_area in active_hit_areas:
-        if hit_area.relative:
-            temp_pos = _xy_subtract(pos,screen.surface.get_abs_offset())
-        else:
-            temp_pos = pos
-        call_with_optional_arguments(hit_area.callback, xy=temp_pos, action='move')
+        call_with_optional_arguments(hit_area.callback, xy=pos, action='move')
 
 def mouse_up(pos):
-    from .graphics import screen, _xy_subtract
     for hit_area in active_hit_areas:
-        if hit_area.relative:
-            temp_pos = _xy_subtract(pos,screen.surface.get_abs_offset())
-        else:
-            temp_pos = pos
-        call_with_optional_arguments(hit_area.callback, xy=temp_pos, action='up')
+        call_with_optional_arguments(hit_area.callback, xy=pos, action='up')
 
     active_hit_areas[:] = []
 
@@ -76,10 +61,14 @@ class touch(object):
             size = (50, 50)
 
         topleft = _topleft_from_aligned_xy(xy=xy, align=align, size=size, surface_size=screen.size)
-        offset = screen.surface.get_abs_offset()
-        topleft  = _xy_add(topleft,offset)
+        self.offset = screen.surface.get_abs_offset()
+        topleft  = _xy_add(topleft,self.offset)
         self.rect = pygame.Rect(topleft, size)
 
     def __call__(self, f):
-        hit_areas.append(HitArea(self.rect, True, f))
+        from .graphics import _xy_subtract
+        def offset_callback(xy,action):
+            temp_xy = _xy_subtract(xy,self.offset)
+            call_with_optional_arguments(f,xy=temp_xy,action=action)
+        hit_areas.append(HitArea(self.rect, offset_callback))
         return f

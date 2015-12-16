@@ -26,7 +26,7 @@ class Button(Surface):
         surface.fill(color_map['white'])
         #register our button as something clickable
         self.surface = surface
-        hit_areas.append(HitArea(pygame.Rect(surface.get_abs_offset(),surface.get_size()),False,self.click))
+        hit_areas.append(HitArea(pygame.Rect(surface.get_abs_offset(),surface.get_size()),self.click))
 
     def click(self,xy,action):
         if action=='down':

@@ -15,9 +15,6 @@ class Wrapper(Surface):
         for x in range(4):
             self.buttons.append(Button(self.surface.subsurface(xPositions[x],0,22,12),x))
 
-    def get_screen(self):
-        return self.screen
-
 
 class Button(Surface):
     def __init__(self,surface,number):
@@ -44,7 +41,7 @@ class Button(Surface):
 def fixup_window():
     pygame.init()
     wrapper = Wrapper()
-    return wrapper.get_screen()
+    return wrapper.screen
 
 def fixup_env():
     pass

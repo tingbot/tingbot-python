@@ -38,7 +38,7 @@ class Button(Surface):
                 button_callback(self.number,'up')
 
 
-def fixup_window():
+def create_main_surface():
     pygame.init()
     wrapper = Wrapper()
     return wrapper.screen

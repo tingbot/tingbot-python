@@ -135,7 +135,7 @@ class WindowController(object):
 
 window_controller = None
 
-def fixup_window():
+def create_main_surface():
     pygame.init()
     surface = pygame.display.set_mode((320, 240))
 

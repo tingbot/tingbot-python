@@ -187,7 +187,7 @@ class Screen(Surface):
 
     def _create_surface(self):
         from . import platform_specific
-        surface = platform_specific.fixup_window()
+        surface = platform_specific.create_main_surface()
         return surface
 
     def ensure_display_setup(self):

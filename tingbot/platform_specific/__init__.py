@@ -5,9 +5,9 @@ def is_tingbot():
     return platform.machine().startswith('armv71')
 
 if platform.system() == 'Darwin':
-    from osx import fixup_env, fixup_window, register_button_callback
+    from osx import fixup_env, create_main_surface, register_button_callback
 elif is_tingbot():
-    from pi import fixup_env, fixup_window, register_button_callback
+    from pi import fixup_env, create_main_surface, register_button_callback
 else:
-    from sdl_wrapper import fixup_env, fixup_window, register_button_callback
+    from sdl_wrapper import fixup_env, create_main_surface, register_button_callback
 

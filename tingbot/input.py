@@ -2,6 +2,7 @@ import pygame
 import sys
 from collections import namedtuple
 from .utils import call_with_optional_arguments
+from .graphics import screen
 
 mouse_down = False
 hit_areas = []
@@ -50,7 +51,7 @@ def mouse_up(pos):
 
 class touch(object):
     def __init__(self, xy=None, size=None, align='center'):
-        from .graphics import _topleft_from_aligned_xy, screen
+        from .graphics import _topleft_from_aligned_xy, screen, _xy_add
 
         if xy is None and size is None:
             xy = (160, 120)
@@ -60,9 +61,14 @@ class touch(object):
             size = (50, 50)
 
         topleft = _topleft_from_aligned_xy(xy=xy, align=align, size=size, surface_size=screen.size)
-
+        self.offset = screen.surface.get_abs_offset()
+        topleft  = _xy_add(topleft,self.offset)
         self.rect = pygame.Rect(topleft, size)
 
     def __call__(self, f):
-        hit_areas.append(HitArea(self.rect, f))
+        from .graphics import _xy_subtract
+        def offset_callback(xy,action):
+            temp_xy = _xy_subtract(xy,self.offset)
+            call_with_optional_arguments(f,xy=temp_xy,action=action)
+        hit_areas.append(HitArea(self.rect, offset_callback))
         return f

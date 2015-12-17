@@ -1,6 +1,5 @@
 import os, time, numbers
 import pygame
-from . import platform_specific
 from .utils import cached_property
 
 # colors from http://clrs.cc/
@@ -187,9 +186,8 @@ class Screen(Surface):
         self.needs_update = False
 
     def _create_surface(self):
-        pygame.init()
-        surface = pygame.display.set_mode((320, 240))
-        platform_specific.fixup_window()
+        from . import platform_specific
+        surface = platform_specific.create_main_surface()
         return surface
 
     def ensure_display_setup(self):

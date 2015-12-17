@@ -4,6 +4,7 @@ from Cocoa import (
     NSWindow, NSUserDefaults)
 from Quartz import CGPointZero, CGRectMake, CGPointMake
 import objc
+import pygame
 from ..utils import cached_property
 
 
@@ -135,7 +136,10 @@ class WindowController(object):
 
 window_controller = None
 
-def fixup_window():
+def create_main_surface():
+    pygame.init()
+    surface = pygame.display.set_mode((320, 240))
+
     SDL_QuartzWindow = objc.lookUpClass('SDL_QuartzWindow')
 
     class SDL_QuartzWindow(objc.Category(SDL_QuartzWindow)):
@@ -156,6 +160,7 @@ def fixup_window():
 
     global window_controller
     window_controller = WindowController()
+    return surface
 
 
 def fixup_env():

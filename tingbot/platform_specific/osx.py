@@ -4,6 +4,7 @@ from Cocoa import (
     NSWindow, NSUserDefaults)
 from Quartz import CGPointZero, CGRectMake, CGPointMake
 import objc
+import pygame
 from ..utils import cached_property
 
 

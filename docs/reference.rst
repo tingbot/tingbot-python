@@ -89,6 +89,10 @@ Screen
         
         screen.image('tingbot.png', xy=(25,25))
 
+.. py:function:: screen.line(start_xy=…, end_xy=…, color=…, width=…)
+
+    Draws a line between ``start_xy`` and ``end_xy``.
+
 Touch
 -----
 

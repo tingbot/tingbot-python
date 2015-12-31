@@ -1,4 +1,4 @@
-import os, time, numbers
+import os, time, numbers, math
 import pygame
 from .utils import cached_property
 
@@ -32,6 +32,22 @@ def _xy_subtract(t1, t2):
 
 def _xy_multiply(t1, t2):
     return (t1[0] * t2[0], t1[1] * t2[1])
+
+def _xy_magnitude(t):
+    return math.hypot(t[0], t[1])
+
+def _xy_normalize(t):
+    ''' 
+    Returns a vector in the same direction but with length 1
+    '''
+    mag = float(_xy_magnitude(t))
+    return (t[0]/mag, t[1]/mag)
+
+def _xy_rotate_90_degrees(t):
+    '''
+    Returns a rotated vector 90 degrees in the anti-clockwise direction
+    '''
+    return (-t[1], t[0])
 
 def _color(identifier_or_tuple):
     try:
@@ -157,6 +173,28 @@ class Surface(object):
         xy = _topleft_from_aligned_xy(xy, align, size, self.size)
 
         self.surface.fill(_color(color), xy+size)
+
+    def line(self, start_xy, end_xy, width=1, color='grey', antialias=True):
+        if antialias:
+            if width == 1:
+                pygame.draw.aaline(self.surface, _color(color), start_xy, end_xy)
+            else:
+                delta = _xy_subtract(end_xy, start_xy)
+                delta_rotated = _xy_rotate_90_degrees(delta)
+
+                perpendicular_offset = _xy_multiply(_xy_normalize(delta_rotated), _scale(width*0.5))
+
+                points = (
+                    _xy_add(start_xy, perpendicular_offset),
+                    _xy_add(end_xy, perpendicular_offset),
+                    _xy_subtract(end_xy, perpendicular_offset),
+                    _xy_subtract(start_xy, perpendicular_offset),
+                )
+
+                # antialiased thick lines aren't supported by pygame :(
+                pygame.draw.polygon(self.surface, _color(color), points)
+        else:
+            pygame.draw.line(self.surface, _color(color), start_xy, end_xy, width)
 
     def image(self, image, xy=None, scale=1, align='center'):
         if isinstance(image, basestring):

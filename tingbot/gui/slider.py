@@ -12,6 +12,10 @@ class Slider(Widget):
         min_val: minimum value that the slider can have
         step:    step value that the slider will change by if clicked
         change_callback: a function that accepts a float - called when the value is changed by a touch event
+        
+    Style Attributes:
+        slider_line_color: color of the line
+        slider_handle_color: color of the handle
     """
     def __init__(self,xy,size,align="center",parent=None, style = None, max_val=1.0,min_val=0.0,step=None,change_callback=None):
         """create a button with size and position specified by xy, size and align

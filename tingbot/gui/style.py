@@ -1,7 +1,8 @@
 defaults = {
     'bg_color'    :'black',
-    'button_color':'blue',
-    'pressed_button_color':'aqua',
+    'button_color':(0,0,180),
+    'button_pressed_color':(0,0,250),
+    'button_rounding':10,
     'button_text_color':'white',
     'button_text_font':None, #use default font
     'button_text_font_size':32,

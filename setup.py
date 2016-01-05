@@ -40,7 +40,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'tbtool = tbtool.tbtool:main',
+            'tbtool = tbtool.__main__:main',
         ],
 
     }

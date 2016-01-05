@@ -10,7 +10,8 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 requirements = [
-    'zmq','docopt'
+    'pyzmq',
+    'docopt',
 ]
 
 setup(
@@ -20,13 +21,13 @@ setup(
     long_description=readme,
     author="Joe Rickerby",
     author_email='joerick@mac.com',
-    url='https://github.com/joerick/tingbot',
+    url='https://github.com/tingbot/tingbot-python',
     packages=[
         'tingbot',
         'tbtool'
     ],
-    package_dir={'tingbot':'tingbot',
-                 'tbtool':'tbtool'},
+    package_dir={'tingbot': 'tingbot',
+                 'tbtool': 'tbtool'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",

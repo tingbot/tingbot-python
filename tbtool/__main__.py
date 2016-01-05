@@ -46,19 +46,14 @@ def close_ssh_session(control_path):
 
 
 def simulate(app_path):
-    python_path = os.path.dirname(__file__)
-
-    environment = os.environ.copy()
-    environment['PYTHONPATH'] = python_path
-
     main_file = os.path.abspath(os.path.join(app_path, 'main'))
 
     os.chdir(app_path)
 
     if os.path.exists(main_file):
-        os.execvpe(main_file, [main_file], environment)
+        os.execvp(main_file, [main_file])
     else:
-        os.execvpe('python', ['python', 'main.py'], environment)
+        os.execvp('python', ['python', 'main.py'])
 
 
 def run(app_path, hostname):

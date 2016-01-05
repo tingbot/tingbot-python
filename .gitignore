@@ -10,3 +10,8 @@
 docs/_build
 
 *~
+
+#Build Folders
+build/
+dist/
+tingbot.egg-info

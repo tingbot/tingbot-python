@@ -6,3 +6,4 @@ recursive-exclude * *.py[co]
 
 recursive-include docs *.rst conf.py Makefile make.bat
 recursive-include tingbot *.png *.ttf
+recursive-include tingbot/platform_specific *.py

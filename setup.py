@@ -10,7 +10,7 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 requirements = [
-    # TODO: put package requirements here
+    'zmq'
 ]
 
 setup(
@@ -23,6 +23,9 @@ setup(
     url='https://github.com/joerick/tingbot',
     packages=[
         'tingbot',
+    ],
+    dependency_links=[
+    'http://pygame.org/ftp/'
     ],
     package_dir={'tingbot':
                  'tingbot'},

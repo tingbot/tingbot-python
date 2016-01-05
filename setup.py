@@ -10,7 +10,7 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 requirements = [
-    'zmq'
+    'zmq','docopt'
 ]
 
 setup(
@@ -23,12 +23,10 @@ setup(
     url='https://github.com/joerick/tingbot',
     packages=[
         'tingbot',
+        'tbtool'
     ],
-    dependency_links=[
-    'http://pygame.org/ftp/'
-    ],
-    package_dir={'tingbot':
-                 'tingbot'},
+    package_dir={'tingbot':'tingbot',
+                 'tbtool':'tbtool'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD",
@@ -40,4 +38,10 @@ setup(
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.7',
     ],
+    entry_points={
+        'console_scripts': [
+            'tbtool = tbtool.tbtool:main',
+        ],
+
+    }
 )

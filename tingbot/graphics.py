@@ -37,7 +37,7 @@ def _xy_magnitude(t):
     return math.hypot(t[0], t[1])
 
 def _xy_normalize(t):
-    ''' 
+    '''
     Returns a vector in the same direction but with length 1
     '''
     mag = float(_xy_magnitude(t))
@@ -175,26 +175,34 @@ class Surface(object):
         self.surface.fill(_color(color), xy+size)
 
     def line(self, start_xy, end_xy, width=1, color='grey', antialias=True):
-        if antialias:
-            if width == 1:
-                pygame.draw.aaline(self.surface, _color(color), start_xy, end_xy)
-            else:
-                delta = _xy_subtract(end_xy, start_xy)
-                delta_rotated = _xy_rotate_90_degrees(delta)
+        # antialiased thick lines aren't supported by pygame, and the aaline function has some
+        # strange bugs on OS X (line comes out the wrong colors, see http://stackoverflow.com/q/24208783/382749)
+        # so antialiasing isn't currently supported.
 
-                perpendicular_offset = _xy_multiply(_xy_normalize(delta_rotated), _scale(width*0.5))
-
-                points = (
-                    _xy_add(start_xy, perpendicular_offset),
-                    _xy_add(end_xy, perpendicular_offset),
-                    _xy_subtract(end_xy, perpendicular_offset),
-                    _xy_subtract(start_xy, perpendicular_offset),
-                )
-
-                # antialiased thick lines aren't supported by pygame :(
-                pygame.draw.polygon(self.surface, _color(color), points)
-        else:
+        if width == 1:
             pygame.draw.line(self.surface, _color(color), start_xy, end_xy, width)
+        else:
+            # we use a polygon to draw thick lines because the pygame line function has a very
+            # strange line cap
+
+            delta = _xy_subtract(end_xy, start_xy)
+            delta_rotated = _xy_rotate_90_degrees(delta)
+
+            # this is a hack to draw line the correct size - pygame.draw.polygon seems to outline
+            # the polygons it draws as well as fill them, making the lines too thick.
+            width -= 1
+
+            perpendicular_offset = _xy_multiply(_xy_normalize(delta_rotated), _scale(width*0.5))
+
+            points = (
+                _xy_add(start_xy, perpendicular_offset),
+                _xy_add(end_xy, perpendicular_offset),
+                _xy_subtract(end_xy, perpendicular_offset),
+                _xy_subtract(start_xy, perpendicular_offset),
+            )
+
+            pygame.draw.polygon(self.surface, _color(color), points)
+
 
     def image(self, image, xy=None, scale=1, align='center'):
         if isinstance(image, basestring):

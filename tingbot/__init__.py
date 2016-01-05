@@ -1,3 +1,20 @@
+try:
+    import pygame
+except ImportError:
+    print 'Failed to import pygame'
+    print '-----------------------'
+    print ''
+    print 'tingbot-python requires pygame. Please download and install pygame 1.9.1'
+    print 'or later from http://www.pygame.org/download.shtml'
+    print ''
+    print "If you're using a virtualenv, you should make the virtualenv with the "
+    print "--system-site-packages flag so the system-wide installation is still "
+    print "accessible."
+    print ''
+    print '-----------------------'
+    print ''
+    raise
+
 from . import platform_specific, input
 
 from .graphics import screen, Surface, Image

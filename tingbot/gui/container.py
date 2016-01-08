@@ -21,15 +21,25 @@ class Container(Widget):
         self.children = []
         self.hit_areas = []
         self.active_hit_areas = []
-        
-    def register(self,widget):
+               
+    def add_child(self,widget):
+        """Add a child widget to this container"""
         self.children.append(widget)
-        
-    def touch(self,widget):
         offset = widget.surface.get_offset()
         rect = pygame.Rect(offset,widget.size)
         self.hit_areas.append(HitArea(rect,widget._touch))
-
+        
+    def remove_child(self,widget):
+        """Remove a specified child from this widget"""
+        self.hit_areas[:] = [x for x in self.hit_areas if x.callback.__self__ is not widget]
+        self.active_hit_areas[:] = [x for x in self.active_hit_areas if x.callback.__self__ is not widget]
+        self.children.remove(widget)
+    
+    def remove_all(self):
+        """Remove all children from this widget"""
+        self.children[:] = []
+        self.hit_areas[:] = []    
+        
     def on_touch(self,xy,action):
         """distribute touch events to relevant widgets, offset relative to each widget"""
         if action=='down':
@@ -54,14 +64,26 @@ class Container(Widget):
             if downwards:
                 for child in self.children:
                     child.update(upwards=False,downwards=True)
-        super(Container,self).update(upwards,downwards)
+            self.draw()
+        if upwards:
+            if hasattr(self.parent,'update'):
+                self.parent.update()
             
 
 class Panel(Container):
-    """Use this class to specify groups of widgets that can be turned on and off together"""
+    """Use this class to specify groups of widgets that can be turned on and off together
+    
+    Style Attributes:
+        bg_color: background color"""
     def draw(self):
-        """draw does not need to do anything in Panel"""
-        pass
+        """ no action needed on draw"""
+        pass        
+        
+    def update(self,upwards=True,downwards=False):
+        #clear contents before drawing
+        if self.visible and downwards:
+            self.fill(self.style.bg_color)
+        super(Panel,self).update(upwards,downwards)
         
 class VirtualPanel(Panel):
     """This class implements a virtual panel"""

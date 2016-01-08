@@ -6,7 +6,7 @@ from ..graphics import _color
 class Button(Widget):
     """A Button widget
     Attributes:
-        but_text: text on the widget
+        label: text on the widget
         callback: function to call when the button is pressed. No arguments taken
         
     Style Attributes:
@@ -18,15 +18,15 @@ class Button(Widget):
         button_text_font: font to use (default)
         button_text_font_size: font size to use
     """
-    def __init__(self, xy, size, align="center", parent=None, style=None, but_text="OK", callback=None):
+    def __init__(self, xy, size, align="center", parent=None, style=None, label="OK", callback=None):
         """create a button with size and position specified by xy, size and align
         it will have parent as a containing widget or will be placed directly on screen if parent is None
         use style to specify button color, activated button color, text color and font
-        but_text: text to display on the button
+        label: text to display on the button
         callback: a function to be called when the button is pressed
         """
         super(Button,self).__init__(xy,size,align,parent,style)
-        self.but_text = but_text
+        self.label = label
         self.pressed = False
         self.callback = callback
         
@@ -56,7 +56,7 @@ class Button(Widget):
         for pos in coords:
             pygame.draw.circle(self.surface,_color(color),pos,rounding)
         
-        self.text(self.but_text,
+        self.text(self.label,
                   color=self.style.button_text_color,
                   font = self.style.button_text_font,
                   font_size = self.style.button_text_font_size)
@@ -64,7 +64,7 @@ class Button(Widget):
 class ToggleButton(Button):
     """A button widget
     Attributes:
-        but_text: text on the widget
+        label: text on the widget
         pressed: whether the button is currently pressed or not
         callback: function to call when the button is pressed. Passes pressed as an argument
 

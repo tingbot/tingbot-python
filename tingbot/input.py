@@ -8,23 +8,28 @@ mouse_down = False
 hit_areas = []
 active_hit_areas = []
 
+modal_handlers = []
+
 HitArea = namedtuple('HitArea', ('rect', 'callback'))
 
 def poll():
     if not pygame.display.get_init():
         return
-
     for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_down(pygame.mouse.get_pos())
+        #filter events if a modal handler is installed
+        if modal_handlers:
+            modal_handlers[-1](event)
+        else:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_down(pygame.mouse.get_pos())
 
-        elif event.type == pygame.MOUSEMOTION:
-            mouse_move(pygame.mouse.get_pos())
+            elif event.type == pygame.MOUSEMOTION:
+                mouse_move(pygame.mouse.get_pos())
 
-        elif event.type == pygame.MOUSEBUTTONUP:
-            mouse_up(pygame.mouse.get_pos())
+            elif event.type == pygame.MOUSEBUTTONUP:
+                mouse_up(pygame.mouse.get_pos())
 
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             command_down = (event.mod & 1024) or (event.mod & 2048)
 
             if event.key == 113 and command_down:
@@ -73,3 +78,17 @@ class touch(object):
 
         hit_areas.append(HitArea(self.rect, offset_callback))
         return f
+        
+def set_modal_handler(handler):
+    """set a handler to intercept all mouse/touch events. These calls can be nested
+    e.g.
+        set_modal_handler(handler1) # handler1 now gets all events
+        set_modal_handler(handler2) # handler2 now gets all events, handler 1 gets nothing
+        unset_modal_handler()       # handler1 now gets all events
+        unset_modal_handler()       # now events are handled normally
+    """
+    modal_handlers.append(handler)
+    
+def unset_modal_handler():
+    """remove the current modal handler"""
+    modal_handlers.pop()

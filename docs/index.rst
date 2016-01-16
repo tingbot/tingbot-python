@@ -14,7 +14,6 @@ Contents:
    readme
    gettingstarted
    reference
-   gui
 
 Indices and tables
 ==================

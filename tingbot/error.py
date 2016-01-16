@@ -43,11 +43,7 @@ def sad_tingbot_image():
 
 
 def error_screen(exc_info):
-    surface = pygame.display.get_surface()
-    if not surface:
-        return
-
-    screen = graphics.Surface(surface)
+    screen = graphics.screen
 
     screen.fill(color='black')
 

@@ -89,6 +89,6 @@ def set_modal_handler(handler):
     """
     modal_handlers.append(handler)
     
-def unset_modal_handler():
+def unset_modal_handler(handler):
     """remove the current modal handler"""
-    modal_handlers.pop()
+    modal_handlers.remove(handler)

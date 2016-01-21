@@ -18,7 +18,7 @@ except ImportError:
 from . import platform_specific, input
 
 from .graphics import screen, Surface, Image
-from .run_loop import main_run_loop, every
+from .run_loop import main_run_loop, every, once
 from .input import touch
 from .button import press
 from .web import webhook

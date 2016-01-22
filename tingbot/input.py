@@ -56,18 +56,16 @@ def mouse_up(pos):
     active_hit_areas[:] = []
 
 class touch(object):
-    def __init__(self, xy=None, size=None, align='center', ref_surface = None):
-        if ref_surface is None:
-            ref_surface = screen
+    def __init__(self, xy=None, size=None, align='center'):
         if xy is None and size is None:
             xy = (160, 120)
-            size = ref_surface.size
+            size = screen.size
             align = 'center'
         elif size is None:
             size = (50, 50)
 
-        topleft = _topleft_from_aligned_xy(xy=xy, align=align, size=size, surface_size=ref_surface.size)
-        self.offset = ref_surface.surface.get_abs_offset()
+        topleft = _topleft_from_aligned_xy(xy=xy, align=align, size=size, surface_size=screen.size)
+        self.offset = screen.surface.get_abs_offset()
         topleft = _xy_add(topleft, self.offset)
         self.rect = pygame.Rect(topleft, size)
 

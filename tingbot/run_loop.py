@@ -47,6 +47,10 @@ class RunLoop(object):
         self.timers.append(timer)
         self.timers.sort(key=operator.attrgetter('next_fire_time'), reverse=True)
 
+    def remove_timer(self,action):
+        """remove a timer from the list"""
+        self.timers[:] = [x for x in self.timers if x.action != action]
+
     def run(self):
         while True:
             start_time = time.time()

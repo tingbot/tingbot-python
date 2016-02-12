@@ -1,6 +1,6 @@
 import pygame
 import os
-from ..graphics import Surface, color_map, screen
+from ..graphics import Surface, color_map
 
 button_callback = None
 
@@ -49,7 +49,7 @@ class Button(Surface):
             self.surface.fill(self.color)
             if button_callback:
                 button_callback(self.number, 'up')
-        screen.needs_update = True
+        pygame.display.update((self.surface.get_abs_offset(),self.surface.get_size()))
 
 
 def create_main_surface():

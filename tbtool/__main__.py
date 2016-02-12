@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import sys, os, textwrap, uuid, datetime, getpass, shutil
+import os, textwrap, uuid, datetime, getpass, shutil
 import subprocess
+from .appdirs import AppDirs
 
 
 def tingbot_key_path():
@@ -46,6 +47,8 @@ def close_ssh_session(control_path):
 
 
 def simulate(app_path):
+    python_exe = install_deps(app_path)
+
     main_file = os.path.abspath(os.path.join(app_path, 'main'))
 
     os.chdir(app_path)
@@ -53,7 +56,7 @@ def simulate(app_path):
     if os.path.exists(main_file):
         os.execvp(main_file, [main_file])
     else:
-        os.execvp('python', ['python', 'main.py'])
+        os.execvp(python_exe, [python_exe, 'main.py'])
 
 
 def run(app_path, hostname):
@@ -97,6 +100,55 @@ def run(app_path, hostname):
     finally:
         close_ssh_session(control_path)
 
+
+def install_deps(app_path):
+    '''
+    Installs the dependencies in requirements.txt into a virtualenv in the app directory
+    Returns the path to the python executable that should be used to run the app.
+    '''
+    import virtualenv
+    wheelhouse = os.path.join(AppDirs('Tingbot', 'Tingbot').user_cache_dir, 'Wheelhouse')
+
+    if not os.path.exists(wheelhouse):
+        os.makedirs(wheelhouse)
+
+    requirements_txt_path = os.path.join(app_path, 'requirements.txt')
+    venv_path = os.path.join(app_path, 'venv')
+    venv_bin_dir = virtualenv.path_locations(venv_path)[3]
+    venv_python_path = os.path.join(venv_bin_dir, 'python')
+
+    if not os.path.exists(requirements_txt_path):
+        # make sure there's no venv and exit
+        shutil.rmtree(venv_path, ignore_errors=True)
+        return 'python'
+
+    # check that there's a virtualenv there and that it's got a working
+    # version of python
+    try:
+        subprocess.check_call([
+            venv_python_path,
+            '-c', 'import sys; sys.exit(0)'
+        ])
+    except (OSError, subprocess.CalledProcessError):
+        # we've got to build the virtualenv
+        shutil.rmtree(venv_path, ignore_errors=True)
+
+        virtualenv.create_environment(venv_path, site_packages=True,)
+
+    venv_pip_path = os.path.join(venv_bin_dir, 'pip')
+
+    env = os.environ.copy()
+    env['PIP_FIND_LINKS'] = 'file://%s' % wheelhouse
+    env['PIP_WHEEL_DIR'] = wheelhouse
+
+    subprocess.check_call([
+            venv_pip_path,
+            'install', '-r', requirements_txt_path,
+        ],
+        env=env
+    )
+
+    return venv_python_path
 
 def install(app_path, hostname):
     control_path = open_ssh_session(hostname)

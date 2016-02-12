@@ -228,10 +228,12 @@ class Screen(Surface):
     def __init__(self):
         super(Screen, self).__init__()
         self.needs_update = False
+        self.has_surface = False
 
     def _create_surface(self):
         from . import platform_specific
         surface = platform_specific.create_main_surface()
+        self.has_surface = True
         return surface
 
     def ensure_display_setup(self):

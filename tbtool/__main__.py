@@ -46,17 +46,27 @@ def close_ssh_session(control_path):
         'hostname-not-required'])
 
 
-def simulate(app_path):
+def _run(app_path, extra_env=None):
+
     python_exe = install_deps(app_path)
 
     main_file = os.path.abspath(os.path.join(app_path, 'main'))
 
     os.chdir(app_path)
 
+    env = os.environ.copy()
+
+    if extra_env:
+        env.update(extra_env)
+
     if os.path.exists(main_file):
-        os.execvp(main_file, [main_file])
+        os.execvpe(main_file, [main_file], env)
     else:
-        os.execvp(python_exe, [python_exe, 'main.py'])
+        os.execvpe(python_exe, [python_exe, 'main.py'], env)
+
+
+def simulate(app_path):
+    _run(app_path)
 
 
 def run(app_path, hostname):
@@ -177,11 +187,17 @@ def install(app_path, hostname):
         close_ssh_session(control_path)
 
 
+def tingbot_run(app_path):
+    _run(app_path, env={'TB_RUN_ON_LCD': 1})
+
+
 def main():
     args = docopt(textwrap.dedent('''
         Usage: tbtool simulate <app>
                tbtool run <app> <hostname>
                tbtool install <app> <hostname>
+
+               tbtool tingbotrun <app>
         '''))
 
     # simulate: Runs an app in the tingbot simulator (must be a python app).
@@ -194,6 +210,8 @@ def main():
         return run(args['<app>'], args['<hostname>'])
     elif args['install']:
         return install(args['<app>'], args['<hostname>'])
+    elif args['tingbot_run']:
+        return tingbot_run(args['<app>'])
 
 if __name__ == '__main__':
     main()

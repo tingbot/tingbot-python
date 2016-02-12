@@ -46,23 +46,41 @@ def close_ssh_session(control_path):
         'hostname-not-required'])
 
 
-def _run(app_path, extra_env=None):
+def _app_exec_info(app_path, python_exe='python'):
+    """ Returns a pair ([args], working_directory) """
 
+    app_path = os.path.abspath(app_path)
+
+    if os.path.isfile(app_path):
+        return ([app_path], os.path.dirname(app_path))
+
+    if os.path.isdir(app_path):
+        main_file = os.path.join(app_path, 'main')
+        if os.path.isfile(main_file):
+            return ([main_file], app_path)
+
+        main_py_file = os.path.join(app_path, 'main.py')
+        if os.path.isfile(main_py_file):
+            return ([python_exe, main_py_file], app_path)
+
+    return (None, None)
+
+
+def _run(app_path, extra_env=None):
     python_exe = install_deps(app_path)
 
-    main_file = os.path.abspath(os.path.join(app_path, 'main'))
+    args, working_directory = _app_exec_info(app_path, python_exe=python_exe)
 
-    os.chdir(app_path)
+    if args is None:
+        raise ValueError('Tingbot app not found at %s' % app_path)
 
     env = os.environ.copy()
 
     if extra_env:
         env.update(extra_env)
 
-    if os.path.exists(main_file):
-        os.execvpe(main_file, [main_file], env)
-    else:
-        os.execvpe(python_exe, [python_exe, 'main.py'], env)
+    os.chdir(working_directory)
+    os.execvpe(args[0], args, env)
 
 
 def simulate(app_path):

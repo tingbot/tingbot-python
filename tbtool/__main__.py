@@ -203,7 +203,7 @@ def main():
                tbtool run <app> <hostname>
                tbtool install <app> <hostname>
 
-               tbtool tingbotrun <app>
+               tbtool tingbot_run <app>
 
         Commands:
           simulate <app>            Runs the app in the simulator

@@ -129,7 +129,7 @@ def install_deps(app_path):
 
     if not os.path.exists(requirements_txt_path):
         # make sure there's no venv and exit
-        shutil.rmtree(venv_path, ignore_errors=True)
+        clean(app_path)
         return 'python'
 
     # check that there's a virtualenv there and that it's got a working
@@ -141,8 +141,7 @@ def install_deps(app_path):
         ])
     except (OSError, subprocess.CalledProcessError):
         # we've got to build the virtualenv
-        shutil.rmtree(venv_path, ignore_errors=True)
-
+        clean(app_path)
         virtualenv.create_environment(venv_path, site_packages=True,)
 
     venv_pip_path = os.path.join(venv_bin_dir, 'pip')
@@ -159,6 +158,12 @@ def install_deps(app_path):
     )
 
     return venv_python_path
+
+
+def clean(app_path):
+    venv_path = os.path.join(app_path, 'venv')
+    shutil.rmtree(venv_path, ignore_errors=True)
+
 
 def install(app_path, hostname):
     control_path = open_ssh_session(hostname)
@@ -194,10 +199,21 @@ def tingbot_run(app_path):
 def main():
     args = docopt(textwrap.dedent('''
         Usage: tbtool simulate <app>
+               tbtool clean <app>
                tbtool run <app> <hostname>
                tbtool install <app> <hostname>
 
                tbtool tingbotrun <app>
+
+        Commands:
+          simulate <app>            Runs the app in the simulator
+          clean <app>               Removes temporary files in the app
+          run <app> <hostname>      Runs the app on the Tingbot specified by hostname
+          install <app> <hostname>  Installs the app on the Tingbot specified by
+                                    hostname
+          tingbot_run <app>         Used by tbprocessd to run Tingbot apps on the
+                                    Tingbot itself. Users should probably use `tbopen'
+                                    instead.
         '''))
 
     # simulate: Runs an app in the tingbot simulator (must be a python app).
@@ -206,6 +222,8 @@ def main():
 
     if args['simulate']:
         return simulate(args['<app>'])
+    elif args['clean']:
+        return clean(args['<app>'])
     elif args['run']:
         return run(args['<app>'], args['<hostname>'])
     elif args['install']:

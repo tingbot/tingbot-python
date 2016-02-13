@@ -156,13 +156,12 @@ class Surface(object):
         self.surface.fill(_color(color))
 
     def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None):
-        font, antialias = _font(font, font_size, antialias)
-        string = unicode(string)
-
-        if antialias is None:
-            antialias
-
-        text_image = Image(surface=font.render(string, antialias, _color(color)))
+        text_image = Image.from_text(
+            string,
+            color=color,
+            font=font,
+            font_size=font_size,
+            antialias=antialias)
 
         self.image(text_image, xy, align=align)
 
@@ -203,7 +202,6 @@ class Surface(object):
 
             pygame.draw.polygon(self.surface, _color(color), points)
 
-
     def image(self, image, xy=None, scale=1, align='center'):
         if isinstance(image, basestring):
             image = image_cache.image_for_filename(image)
@@ -230,10 +228,12 @@ class Screen(Surface):
     def __init__(self):
         super(Screen, self).__init__()
         self.needs_update = False
+        self.has_surface = False
 
     def _create_surface(self):
         from . import platform_specific
         surface = platform_specific.create_main_surface()
+        self.has_surface = True
         return surface
 
     def ensure_display_setup(self):
@@ -283,6 +283,16 @@ class Image(Surface):
         surface = surface.convert_alpha()
 
         return cls(surface)
+
+    @classmethod
+    def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None):
+        font, antialias = _font(font, font_size, antialias)
+        string = unicode(string)
+
+        if antialias is None:
+            antialias
+
+        return cls(surface=font.render(string, antialias, _color(color)))
 
     def __init__(self, surface=None, size=None):
         pygame.init()

@@ -44,24 +44,25 @@ def sad_tingbot_image():
 
 def error_screen(exc_info):
     screen = graphics.screen
+    if screen.has_surface:
 
-    screen.fill(color='black')
+        screen.fill(color='black')
 
-    image = graphics.Image(surface=sad_tingbot_image())
+        image = graphics.Image(surface=sad_tingbot_image())
 
-    screen.image(image, xy=(320/2, 85), align='center')
+        screen.image(image, xy=(320/2, 85), align='center')
 
-    line1 = type(exc_info[1]).__name__
-    frame = get_app_frame(exc_info[2])
-    filename = os.path.basename(frame.f_code.co_filename)
-    line2 = '%s:%i' % (filename, frame.f_lineno)
+        line1 = type(exc_info[1]).__name__
+        frame = get_app_frame(exc_info[2])
+        filename = os.path.basename(frame.f_code.co_filename)
+        line2 = '%s:%i' % (filename, frame.f_lineno)
 
-    font = os.path.join(os.path.dirname(__file__), '04B_03__.TTF')
+        font = os.path.join(os.path.dirname(__file__), '04B_03__.TTF')
 
-    screen.text(line1, xy=(320/2, 135), color='white', align='center', font=font, font_size=16)
-    screen.text(line2, xy=(320/2, 155), color='white', align='center', font=font, font_size=16)
+        screen.text(line1, xy=(320/2, 135), color='white', align='center', font=font, font_size=16)
+        screen.text(line2, xy=(320/2, 155), color='white', align='center', font=font, font_size=16)
 
-    pygame.display.update()
+        pygame.display.update()
 
 
 def get_app_frame(traceback):

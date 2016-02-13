@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import os, textwrap, uuid, datetime, getpass, shutil
+import os, textwrap, uuid, datetime, getpass, shutil, filecmp
 import subprocess
 from .appdirs import AppDirs
 
@@ -144,9 +144,10 @@ def install_deps(app_path):
     venv_path = os.path.join(app_path, 'venv')
     venv_bin_dir = virtualenv.path_locations(venv_path)[3]
     venv_python_path = os.path.join(venv_bin_dir, 'python')
+    venv_previous_requirements_path = os.path.join(venv_path, 'requirements.txt')
 
-    if not os.path.exists(requirements_txt_path):
-        # make sure there's no venv and exit
+    if not os.path.isfile(requirements_txt_path):
+        # delete the venv if it's there and use the system python
         clean(app_path)
         return 'python'
 
@@ -162,18 +163,28 @@ def install_deps(app_path):
         clean(app_path)
         virtualenv.create_environment(venv_path, site_packages=True,)
 
-    venv_pip_path = os.path.join(venv_bin_dir, 'pip')
-
-    env = os.environ.copy()
-    env['PIP_FIND_LINKS'] = 'file://%s' % wheelhouse
-    env['PIP_WHEEL_DIR'] = wheelhouse
-
-    subprocess.check_call([
-            venv_pip_path,
-            'install', '-r', requirements_txt_path,
-        ],
-        env=env
+    requirements_unchanged_since_last_run = (
+        os.path.isfile(venv_previous_requirements_path)
+        and filecmp.cmp(requirements_txt_path, venv_previous_requirements_path)
     )
+
+    if not requirements_unchanged_since_last_run:
+        venv_pip_path = os.path.join(venv_bin_dir, 'pip')
+
+        env = os.environ.copy()
+        env['PIP_FIND_LINKS'] = 'file://%s' % wheelhouse
+        env['PIP_WHEEL_DIR'] = wheelhouse
+
+        subprocess.check_call([
+                venv_python_path,
+                '-m', 'pip',
+                'install', '-r', requirements_txt_path,
+            ],
+            env=env
+        )
+
+        # copy requirements into the venv so we don't need to run pip every run
+        shutil.copyfile(requirements_txt_path, venv_previous_requirements_path)
 
     return venv_python_path
 

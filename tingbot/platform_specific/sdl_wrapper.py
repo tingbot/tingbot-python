@@ -11,6 +11,8 @@ top_margin = 12
 bot_width = 470
 bot_height = 353
 
+wrapper = None
+
 
 class Wrapper(Surface):
     def __init__(self):
@@ -25,6 +27,7 @@ class Wrapper(Surface):
         self.buttons = []
         for x in range(4):
             self.buttons.append(Button(self.surface.subsurface(xPositions[x], top_margin, 22, 12), x))
+        pygame.display.update()
 
 
 class Button(Surface):
@@ -51,10 +54,14 @@ class Button(Surface):
                 button_callback(self.number, 'up')
         pygame.display.update((self.surface.get_abs_offset(),self.surface.get_size()))
 
+def initialise_if_needed():
+    global wrapper
+    if wrapper is None:
+        pygame.init()
+        wrapper = Wrapper()
 
 def create_main_surface():
-    pygame.init()
-    wrapper = Wrapper()
+    initialise_if_needed()
     return wrapper.screen
 
 
@@ -72,5 +79,6 @@ def register_button_callback(callback):
 
     Currently only 'down' is implemented.
     '''
+    initialise_if_needed()
     global button_callback
     button_callback = callback

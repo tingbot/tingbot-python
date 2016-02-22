@@ -17,6 +17,16 @@ class every(object):
 
         return f
 
+class once(object):
+    def __init__(self, hours=0, minutes=0, seconds=0):
+        self.period = (hours * 60 + minutes) * 60 + seconds
+
+    def __call__(self, f):
+        timer = Timer(action=f, period=self.period, repeating=False, next_fire_time=None)
+
+        main_run_loop.schedule(timer)
+
+        return f
 
 class RunLoop(object):
     def __init__(self):
@@ -32,10 +42,14 @@ class RunLoop(object):
                 timer.next_fire_time = 0
             else:
                 # call it after 'period'
-                timer.next_fire_time = time.time() + self.period
+                timer.next_fire_time = time.time() + timer.period
 
         self.timers.append(timer)
         self.timers.sort(key=operator.attrgetter('next_fire_time'), reverse=True)
+
+    def remove_timer(self,action):
+        """remove a timer from the list"""
+        self.timers[:] = [x for x in self.timers if x.action != action]
 
     def run(self):
         while True:

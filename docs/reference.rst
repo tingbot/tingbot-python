@@ -126,7 +126,7 @@ rectangle to the screen at the same place.
     location of the touch. ``action`` is one of 'down', 'move', 'up'.
 
     .. code-block:: python
-        :caption: Example: Simple Drawing app
+        :caption: Example: Simple Drawing app code
 
         @touch()
         def on_touch(xy):
@@ -208,6 +208,7 @@ our `tutorial video <https://www.youtube.com/watch?v=yZg8OIzVByM>`_ to see how t
 webhooks.
 
 .. code-block:: python
+
     import tingbot
     from tingbot import *
 

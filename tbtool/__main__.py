@@ -232,6 +232,7 @@ def main():
                tbtool run <app> <hostname>
                tbtool install <app> <hostname>
                tbtool tingbot_run <app>
+               tbtool -h|--help
 
         Commands:
           simulate <app>            Runs the app in the simulator
@@ -243,10 +244,6 @@ def main():
                                     Tingbot itself. Users should probably use `tbopen'
                                     instead.
         '''))
-
-    # simulate: Runs an app in the tingbot simulator (must be a python app).
-    # run: Runs an app on the tingbot specified by <hostname>, without installing.
-    # install: Installs an app on the tingbot specified
 
     if args['simulate']:
         return simulate(args['<app>'])

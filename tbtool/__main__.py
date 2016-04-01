@@ -231,7 +231,6 @@ def main():
                tbtool clean <app>
                tbtool run <app> <hostname>
                tbtool install <app> <hostname>
-
                tbtool tingbot_run <app>
 
         Commands:

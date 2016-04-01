@@ -222,7 +222,7 @@ def install(app_path, hostname):
 
 
 def tingbot_run(app_path):
-    _run(app_path, env={'TB_RUN_ON_LCD': 1})
+    _run(app_path, extra_env={'TB_RUN_ON_LCD': '1'})
 
 
 def main():

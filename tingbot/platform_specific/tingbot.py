@@ -19,6 +19,7 @@ def fixup_env():
         print 'Mouse input device not found in /dev/input. Touch support not available.'
 
 def create_main_surface():
+    import pygame
     pygame.init()
     surface = pygame.display.set_mode((320, 240))
     import pygame.mouse

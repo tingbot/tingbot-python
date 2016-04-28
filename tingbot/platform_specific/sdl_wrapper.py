@@ -23,17 +23,17 @@ class Simulator(object):
         self.surface = pygame.display.set_mode((width, height))
 
         self.screen = self.surface.subsurface((86, 54, 320, 240))
+        bot_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'bot.png'))
+        self.surface.fill(background_color)
+        self.surface.blit(bot_image, (left_margin, top_margin))
+
         button_positions = (85, 125, 345, 385)
         self.buttons = []
-
         for button_index, x_position in enumerate(button_positions):
             button_surface = self.surface.subsurface(x_position, top_margin, 22, 12)
             button = Button(button_surface, button_index)
             self.buttons.append(button)
 
-        bot_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'bot.png'))
-        self.surface.fill(background_color)
-        self.surface.blit(bot_image, (left_margin, top_margin))
         pygame.display.update()
 
 

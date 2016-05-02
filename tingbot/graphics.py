@@ -123,9 +123,9 @@ class ImageCache(object):
     def __init__(self):
         self.cache = {}
 
-    def image_for_name(self, name):
+    def image_for_name(self, name, raise_error=True):
         if name not in self.cache:
-            self.cache[name] = Image.load(name)
+            self.cache[name] = Image.load(name, raise_error)
 
         return self.cache[name]
 
@@ -203,9 +203,9 @@ class Surface(object):
 
             pygame.draw.polygon(self.surface, _color(color), points)
 
-    def image(self, image, xy=None, scale=1, align='center'):
+    def image(self, image, xy=None, scale=1, align='center', raise_error=True):
         if isinstance(image, basestring):
-            image = image_cache.image_for_name(image)
+            image = image_cache.image_for_name(image, raise_error)
 
         scale = _scale(scale)
         image_size = image.size
@@ -271,7 +271,7 @@ screen = Screen()
 
 class Image(Surface):
     @classmethod
-    def load(cls, filename):
+    def load(cls, filename, raise_error = True):
         # load our file first
         try:
             if filename.startswith('http://'):
@@ -281,6 +281,8 @@ class Image(Surface):
             else:
                 image_file = open(filename,'rb')
         except IOError:
+            if raise_error:
+                raise
             image_file = open(os.path.join(os.path.dirname(__file__), 'broken_image.png'))
         with image_file:
             # if it's a gif, load it using the special GIFImage class

@@ -1,5 +1,6 @@
-import os, time, numbers, math
+import os, time, numbers, math, io
 import pygame
+import requests
 from .utils import cached_property
 
 # colors from http://clrs.cc/
@@ -122,11 +123,11 @@ class ImageCache(object):
     def __init__(self):
         self.cache = {}
 
-    def image_for_filename(self, filename):
-        if filename not in self.cache:
-            self.cache[filename] = Image.load(filename)
+    def image_for_name(self, name):
+        if name not in self.cache:
+            self.cache[name] = Image.load(name)
 
-        return self.cache[filename]
+        return self.cache[name]
 
 image_cache = ImageCache()
 
@@ -204,7 +205,7 @@ class Surface(object):
 
     def image(self, image, xy=None, scale=1, align='center'):
         if isinstance(image, basestring):
-            image = image_cache.image_for_filename(image)
+            image = image_cache.image_for_name(image)
 
         scale = _scale(scale)
         image_size = image.size
@@ -271,16 +272,27 @@ screen = Screen()
 class Image(Surface):
     @classmethod
     def load(cls, filename):
-        # if it's a gif, load it using the special GIFImage class
-        _, extension = os.path.splitext(filename)
-        if extension.lower() == '.gif':
-            return GIFImage(filename=filename)
+        # load our file first
+        try:
+            if filename.startswith('http://'):
+                response = requests.get(filename)
+                response.raise_for_status()
+                image_file = io.BytesIO(response.content)
+            else:
+                image_file = open(filename,'rb')
+        except IOError:
+            image_file = open(os.path.join(os.path.dirname(__file__), 'broken_image.png'))
+        with image_file:
+            # if it's a gif, load it using the special GIFImage class
+            _, extension = os.path.splitext(filename)
+            if extension.lower() == '.gif':
+                return GIFImage(image_file=image_file)
 
-        # ensure the screen surface has been created (otherwise pygame doesn't know the 'video mode')
-        screen.ensure_display_setup()
+            # ensure the screen surface has been created (otherwise pygame doesn't know the 'video mode')
+            screen.ensure_display_setup()
 
-        surface = pygame.image.load(filename)
-        surface = surface.convert_alpha()
+            surface = pygame.image.load(image_file)
+            surface = surface.convert_alpha()
 
         return cls(surface)
 
@@ -300,11 +312,12 @@ class Image(Surface):
         super(Image, self).__init__(surface)
 
 
+
 class GIFImage(Surface):
-    def __init__(self, filename):
+    def __init__(self, image_file): #image_file can be either a file-like object or filename
         pygame.init()
         from PIL import Image as PILImage
-        self.frames = self._get_frames(PILImage.open(filename))
+        self.frames = self._get_frames(PILImage.open(image_file))
         self.total_duration = sum(f[1] for f in self.frames)
 
     def _get_frames(self, pil_image):

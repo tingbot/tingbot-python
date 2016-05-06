@@ -1,5 +1,10 @@
-import os, time, numbers, math
+import os, time, numbers, math, io
 import pygame
+import requests
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 from .utils import cached_property
 
 # colors from http://clrs.cc/
@@ -23,6 +28,8 @@ color_map = {
     'grey': (170, 170, 170),
     'black': (0, 0, 0),
 }
+
+broken_image_file = os.path.join(os.path.dirname(__file__), 'broken_image.png')
 
 def _xy_add(t1, t2):
     return (t1[0] + t2[0], t1[1] + t2[1])
@@ -118,15 +125,19 @@ def _topleft_from_aligned_xy(xy, align, size, surface_size):
     anchor_offset = _xy_multiply(_anchor(align), size)
     return _xy_subtract(xy, anchor_offset)
 
+def _is_url(loc):
+    """returns true if loc is a url, and false if not"""
+    return urlparse(loc)[0]!=''
+
 class ImageCache(object):
     def __init__(self):
         self.cache = {}
 
-    def image_for_filename(self, filename):
-        if filename not in self.cache:
-            self.cache[filename] = Image.load(filename)
+    def image_for_name(self, name):
+        if name not in self.cache:
+            self.cache[name] = Image.load_filename(name)
 
-        return self.cache[filename]
+        return self.cache[name]
 
 image_cache = ImageCache()
 
@@ -202,9 +213,18 @@ class Surface(object):
 
             pygame.draw.polygon(self.surface, _color(color), points)
 
-    def image(self, image, xy=None, scale=1, align='center'):
+    def image(self, image, xy=None, scale=1, align='center', raise_error=True):
         if isinstance(image, basestring):
-            image = image_cache.image_for_filename(image)
+            try:
+                if _is_url(image):
+                    image = Image.load_url(image)
+                else:
+                    image = image_cache.image_for_name(image)
+            except IOError:
+                if raise_error:
+                    raise
+                else:
+                    image = image_cache.image_for_name(broken_image_file)
 
         scale = _scale(scale)
         image_size = image.size
@@ -270,19 +290,37 @@ screen = Screen()
 
 class Image(Surface):
     @classmethod
-    def load(cls, filename):
-        # if it's a gif, load it using the special GIFImage class
-        _, extension = os.path.splitext(filename)
-        if extension.lower() == '.gif':
-            return GIFImage(filename=filename)
+    def load_filename(cls, filename):
+        """Open a local file as an Image"""
+        image_file = open(filename,'rb')
+        return cls.load_file(image_file,filename)
 
-        # ensure the screen surface has been created (otherwise pygame doesn't know the 'video mode')
-        screen.ensure_display_setup()
+    @classmethod
+    def load_url(cls, url):
+        """Open a url as an Image"""
+        response = requests.get(url)
+        response.raise_for_status()
+        image_file = io.BytesIO(response.content)
+        return cls.load_file(image_file,url)
+    
+    @classmethod
+    def load_file(cls,file_object,name_hint):
+        """load a file-like object as an image. Takes name_hint as an optional extra - if this
+           finishes with .gif, then a GIFImage will be returned"""
+        with file_object:
+            # if it's a gif, load it using the special GIFImage class
+            _, extension = os.path.splitext(name_hint)
+            if extension.lower() == '.gif':
+                return GIFImage(image_file=file_object)
 
-        surface = pygame.image.load(filename)
-        surface = surface.convert_alpha()
+            # ensure the screen surface has been created (otherwise pygame doesn't know the 'video mode')
+            screen.ensure_display_setup()
+
+            surface = pygame.image.load(file_object)
+            surface = surface.convert_alpha()
 
         return cls(surface)
+
 
     @classmethod
     def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None):
@@ -300,11 +338,12 @@ class Image(Surface):
         super(Image, self).__init__(surface)
 
 
+
 class GIFImage(Surface):
-    def __init__(self, filename):
+    def __init__(self, image_file): #image_file can be either a file-like object or filename
         pygame.init()
         from PIL import Image as PILImage
-        self.frames = self._get_frames(PILImage.open(filename))
+        self.frames = self._get_frames(PILImage.open(image_file))
         self.total_duration = sum(f[1] for f in self.frames)
 
     def _get_frames(self, pil_image):

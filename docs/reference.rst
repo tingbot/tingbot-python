@@ -72,9 +72,10 @@ Screen
         screen.rectangle(xy=(160,120), size=(100,100), color=(255,0,0), align='center')
 
 
-.. py:function:: screen.image(filename…, xy=…, scale=…, align=…)
+.. py:function:: screen.image(filename…, xy=…, scale=…, align=…, raise_error=True)
 
-    Draws an image with name filename at position xy.
+    Draws an image with name filename at position xy. If filename is a URL (e.g. http://example.com/cats.png) then
+    it will attempt to download this and display it.
 
     Images can be animated GIFs. Make sure to draw them in a loop() function to see them animate.
 
@@ -83,6 +84,10 @@ Screen
     Align is one of 
 
         topleft, left, bottomleft, top, center, bottom, topright, right, bottomright
+        
+    If raise_error is True then any errors encountered while opening or retrieving the image will cause 
+    an `exception <https://docs.python.org/2/tutorial/errors.html>`_. If it is False, then if there is an 
+    error a "file not found" icon will be displayed instead 
 
     .. code-block:: python
         :caption: Example: Drawing an Image

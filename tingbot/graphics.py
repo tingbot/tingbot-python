@@ -1,4 +1,4 @@
-import os, time, numbers, math, io
+import os, time, numbers, math, io, warnings
 import pygame
 import requests
 try:
@@ -289,6 +289,14 @@ screen = Screen()
 
 
 class Image(Surface):
+    @classmethod
+    def load(cls, filename):
+        warnings.warn(
+            'Image.load is deprecated. Use Image.load_filename instead.',
+            DeprecationWarning,
+            stacklevel=2)
+        return cls.load_filename(filename)
+
     @classmethod
     def load_filename(cls, filename):
         """Open a local file as an Image"""

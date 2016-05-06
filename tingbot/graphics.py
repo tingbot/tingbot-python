@@ -127,7 +127,7 @@ def _topleft_from_aligned_xy(xy, align, size, surface_size):
 
 def _is_url(loc):
     """returns true if loc is a url, and false if not"""
-    return urlparse(loc)[0]!=''
+    return (urlparse(loc).scheme != '')
 
 class ImageCache(object):
     def __init__(self):
@@ -300,8 +300,8 @@ class Image(Surface):
     @classmethod
     def load_filename(cls, filename):
         """Open a local file as an Image"""
-        image_file = open(filename,'rb')
-        return cls.load_file(image_file,filename)
+        image_file = open(filename, 'rb')
+        return cls.load_file(image_file, filename)
 
     @classmethod
     def load_url(cls, url):
@@ -309,10 +309,10 @@ class Image(Surface):
         response = requests.get(url)
         response.raise_for_status()
         image_file = io.BytesIO(response.content)
-        return cls.load_file(image_file,url)
-    
+        return cls.load_file(image_file, url)
+
     @classmethod
-    def load_file(cls,file_object,name_hint):
+    def load_file(cls, file_object, name_hint):
         """load a file-like object as an image. Takes name_hint as an optional extra - if this
            finishes with .gif, then a GIFImage will be returned"""
         with file_object:

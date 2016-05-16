@@ -168,8 +168,8 @@ class Surface(object):
             self.surface.fill(color,rect)
         elif len(color)>=4:
             if rect is None:
-                rect = pygame.Rect((0,0),self.size)
-            tmp_surface = pygame.Surface(rect.size,pygame.SRCALPHA)
+                rect = (0,0)+self.size
+            tmp_surface = pygame.Surface(rect[2:3],pygame.SRCALPHA)
             tmp_surface.fill(color)
             self.surface.blit(tmp_surface,rect)
 

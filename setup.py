@@ -44,6 +44,7 @@ setup(
         'console_scripts': [
             'tbtool = tbtool.__main__:main',
         ],
+    },
+    test_suite='tests',
 
-    }
 )

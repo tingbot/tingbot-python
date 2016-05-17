@@ -14,16 +14,16 @@ class TestSettings(unittest.TestCase):
     def setUp(self):
         #monkey patch load and save functions
         self.load_json_old = settings.load_json
+        self.save_json_old = settings.save_json
         settings.load_json = fake_load_json
-        self.json_dump_old = json.dump
-        json.dump = self.fake_json_dump
+        settings.save_json = self.fake_save_json
         self.settings = settings.SettingsDict()
         
     def tearDown(self):
-        json.dump = self.json_dump_old
+        settings.save_json = self.save_json_old
         settings.load_json = self.load_json_old
         
-    def fake_json_dump(self,fp,obj):
+    def fake_save_json(self,fp,obj):
         self.json_output = json.loads(json.dumps(obj))
         
     def test_simple_assign_and_retrieve(self):

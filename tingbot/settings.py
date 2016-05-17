@@ -6,7 +6,7 @@ import sys
 module_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
 default_settings = os.path.join(module_dir,'default_settings.json')
 gui_settings = os.path.join(module_dir,'gui_settings.json')
-app_settings = os.path.join(module_dir,'app_settings.json')
+app_settings = os.path.join(module_dir,'local_settings.json')
 print default_settings,gui_settings,app_settings
 
 def load_json(filename):
@@ -20,6 +20,10 @@ def load_json(filename):
     except IOError,ValueError:
         #either non-existent file or empty filename
         return {}
+
+def save_json(filname,obj):
+    with open(app_settings,'w') as fp:
+        json.dump(filename,obj)
 
 class SettingsDict(collections.MutableMapping):
 
@@ -62,7 +66,6 @@ class SettingsDict(collections.MutableMapping):
         self.loaded = True            
     
     def save(self):
-        with open(app_settings,'w') as fp:
-            json.dump(fp,self.local_settings)
+        save_json(app_settings,self.local_settings)
             
 config = SettingsDict()

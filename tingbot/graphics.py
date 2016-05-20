@@ -1,4 +1,4 @@
-import os, time, numbers, math, io
+import os, time, numbers, math, io, warnings
 import pygame
 import requests
 try:
@@ -127,7 +127,7 @@ def _topleft_from_aligned_xy(xy, align, size, surface_size):
 
 def _is_url(loc):
     """returns true if loc is a url, and false if not"""
-    return urlparse(loc)[0]!=''
+    return (urlparse(loc).scheme != '')
 
 class ImageCache(object):
     def __init__(self):
@@ -163,8 +163,18 @@ class Surface(object):
     def size(self):
         return self.surface.get_size()
 
+    def _fill(self, color, rect = None):
+        if len(color)<=3:
+            self.surface.fill(color,rect)
+        elif len(color)>=4:
+            if rect is None:
+                rect = (0,0)+self.size
+            tmp_surface = pygame.Surface(rect[2:3],pygame.SRCALPHA)
+            tmp_surface.fill(color)
+            self.surface.blit(tmp_surface,rect)
+
     def fill(self, color):
-        self.surface.fill(_color(color))
+        self._fill(_color(color))
 
     def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None):
         text_image = Image.from_text(
@@ -182,7 +192,7 @@ class Surface(object):
 
         xy = _topleft_from_aligned_xy(xy, align, size, self.size)
 
-        self.surface.fill(_color(color), xy+size)
+        self._fill(_color(color), xy+size)
 
     def line(self, start_xy, end_xy, width=1, color='grey', antialias=True):
         # antialiased thick lines aren't supported by pygame, and the aaline function has some
@@ -290,10 +300,18 @@ screen = Screen()
 
 class Image(Surface):
     @classmethod
+    def load(cls, filename):
+        warnings.warn(
+            'Image.load is deprecated. Use Image.load_filename instead.',
+            DeprecationWarning,
+            stacklevel=2)
+        return cls.load_filename(filename)
+
+    @classmethod
     def load_filename(cls, filename):
         """Open a local file as an Image"""
-        image_file = open(filename,'rb')
-        return cls.load_file(image_file,filename)
+        image_file = open(filename, 'rb')
+        return cls.load_file(image_file, filename)
 
     @classmethod
     def load_url(cls, url):
@@ -301,10 +319,10 @@ class Image(Surface):
         response = requests.get(url)
         response.raise_for_status()
         image_file = io.BytesIO(response.content)
-        return cls.load_file(image_file,url)
-    
+        return cls.load_file(image_file, url)
+
     @classmethod
-    def load_file(cls,file_object,name_hint):
+    def load_file(cls, file_object, name_hint):
         """load a file-like object as an image. Takes name_hint as an optional extra - if this
            finishes with .gif, then a GIFImage will be returned"""
         with file_object:

@@ -1,29 +1,29 @@
 import unittest
-import tingbot.settings as settings
+import tingbot.tingapp as tingapp
 import json
 
-def fake_load_json(filename):
-    if filename == settings.default_settings:
+def fake_load_json(path,filename):
+    if filename == tingapp.default_settings:
         return {'a':1, 'b':2, 'c':3}
-    elif filename == settings.gui_settings:
+    elif filename == tingapp.general_settings:
         return {'b':4, 'c':5}
-    elif filename == settings.app_settings:
+    elif filename == tingapp.local_settings:
         return {'c':6}
 
 class TestSettings(unittest.TestCase):
     def setUp(self):
         #monkey patch load and save functions
-        self.load_json_old = settings.load_json
-        self.save_json_old = settings.save_json
-        settings.load_json = fake_load_json
-        settings.save_json = self.fake_save_json
-        self.settings = settings.SettingsDict()
+        self.load_json_old = tingapp.load_json
+        self.save_json_old = tingapp.save_json
+        tingapp.load_json = fake_load_json
+        tingapp.save_json = self.fake_save_json
+        self.settings = tingapp.SettingsDict('fake_dir')
         
     def tearDown(self):
-        settings.save_json = self.save_json_old
-        settings.load_json = self.load_json_old
+        tingapp.save_json = self.save_json_old
+        tingapp.load_json = self.load_json_old
         
-    def fake_save_json(self,fp,obj):
+    def fake_save_json(self,path,filename,obj):
         self.json_output = json.loads(json.dumps(obj))
         
     def test_simple_assign_and_retrieve(self):

@@ -22,7 +22,7 @@ from .run_loop import main_run_loop, every, once
 from .input import touch
 from .button import press
 from .web import webhook
-from .settings import config
+from .tingapp import app
 
 platform_specific.fixup_env()
 

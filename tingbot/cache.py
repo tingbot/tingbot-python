@@ -5,6 +5,8 @@ import rfc822
 import calendar
 import requests
 import io
+import os
+from urlparse import urlparse
 
 def get_http_timestamp(dt):
     return calendar.timegm(rfc822.parsedate(dt))
@@ -14,11 +16,7 @@ def get_last_modified(response):
     try:
         return get_http_timestamp(response.headers['last-modified'])
     except (KeyError,TypeError):
-        pass
-    try:
-        return get_http_timestamp(response.headers['date'])
-    except (KeyError,TypeError):
-        return time.time()     
+        return None
 
 def get_max_age(response,last_modified):
     """return how many seconds from original access this response is valid for"""
@@ -34,7 +32,22 @@ def get_max_age(response,last_modified):
         return get_http_timestamp(response.headers['expires']) - time.time()
     except (KeyError,TypeError):
         #really no info from server  so guess based on last-modified
-        return min(24*60*60,(time.time()-last_modified)/10)
+        if last_modified:
+            return min(24*60*60,(time.time()-last_modified)/10)
+        else:
+            #not even a last_modified - so conservative guess of 60s
+            return 60
+
+def get_etag(response):
+    try:
+        return response.headers['etag']
+    except KeyError:
+        return None
+
+def is_url(loc):
+    """returns true if loc is a url, and false if not"""
+    return (urlparse(loc).scheme != '')
+
 
 class ImageEntry(object):
     #abstract base class
@@ -47,7 +60,6 @@ class ImageEntry(object):
     
 
 class WebImage(ImageEntry):
-    ##FIXME## include etags!
     def __init__(self,url):
         import graphics
         self.url = url
@@ -62,6 +74,7 @@ class WebImage(ImageEntry):
     def set_attributes(self,response):    
         self.last_modified = get_last_modified(response)
         self.max_age  = get_max_age(response,self.last_modified)
+        self.etag = get_etag(response)
         
     def is_fresh(self):
         now = time.time()
@@ -70,33 +83,53 @@ class WebImage(ImageEntry):
         try:
             response = requests.head(self.url)
             response.raise_for_status()
+            old_lm = self.last_modified
+            old_etag = self.etag
+            self.retrieved = time.time()
             self.set_attributes(response)
-            if self.last_modified<self.retrieved:
+            if old_etag and self.etag==old_etag:
+                return True
+            if old_lm and self.last_modified==old_lm:
                 return True
         except IOError:
             return False
         return False
         
 class FileImage(object):
-    pass
-        
+    def __init__(self,filename):
+        import graphics
+        self.filename = filename
+        self.image = graphics.Image.load_filename(filename)
+        self.last_modified = os.path.getmtime(filename)
+        self.last_accessed=time.time()
+
+    def is_fresh(self):
+        return self.last_modified==os.path.getmtime(self.filename)       
         
 class ImageCache(object):
-    def __init__(self):
+    def __init__(self, cache_size = 2*10**6):
         self.images = {}
         self.size = 0
+        self.cache_size = cache_size
         
     def get_image(self,location):
         if location in self.images:
             if self.images[location].is_fresh():
                 return self.images[location].get_image()
             else:
-                self.size -= self.images[location].get_size()
-                del self.images[location]
+                sel.del_image(location)
         if is_url(location):
             self.images[location] = WebImage(location)
         else:
             self.images[location] = FileImage(location)
         self.size += self.images[location].get_size()
+        while self.size > self.cache_size:
+            oldest_location = sorted(self.images,key=lambda a:self.images[a].last_accessed)[0]
+            self.del_image(oldest_location)
+            
         return self.images[location].get_image()
+        
+    def del_image(self,location):
+        self.size -= self.images[location].get_size()
+        del self.images[location]
         

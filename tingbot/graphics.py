@@ -129,17 +129,7 @@ def _is_url(loc):
     """returns true if loc is a url, and false if not"""
     return (urlparse(loc).scheme != '')
 
-class ImageCache(object):
-    def __init__(self):
-        self.cache = {}
-
-    def image_for_name(self, name):
-        if name not in self.cache:
-            self.cache[name] = Image.load_filename(name)
-
-        return self.cache[name]
-
-image_cache = ImageCache()
+image_cache = cache.ImageCache()
 
 class Surface(object):
     def __init__(self, surface=None):
@@ -226,15 +216,12 @@ class Surface(object):
     def image(self, image, xy=None, scale=1, align='center', raise_error=True):
         if isinstance(image, basestring):
             try:
-                if _is_url(image):
-                    image = Image.load_url(image)
-                else:
-                    image = image_cache.image_for_name(image)
+                image = image_cache.get_image(image)
             except IOError:
                 if raise_error:
                     raise
                 else:
-                    image = image_cache.image_for_name(broken_image_file)
+                    image = image_cache.get_image(broken_image_file)
 
         scale = _scale(scale)
         image_size = image.size

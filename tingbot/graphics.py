@@ -1,6 +1,7 @@
 import os, time, numbers, math, io, warnings
 import pygame
 import requests
+import cache
 try:
     from urlparse import urlparse
 except ImportError:

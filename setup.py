@@ -47,5 +47,5 @@ setup(
         ],
     },
     test_suite='tests',
-    tests_require=['httpretty'],
+    tests_require=['httpretty','mock'],
 )

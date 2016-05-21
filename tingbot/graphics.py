@@ -126,10 +126,6 @@ def _topleft_from_aligned_xy(xy, align, size, surface_size):
     anchor_offset = _xy_multiply(_anchor(align), size)
     return _xy_subtract(xy, anchor_offset)
 
-def _is_url(loc):
-    """returns true if loc is a url, and false if not"""
-    return (urlparse(loc).scheme != '')
-
 image_cache = cache.ImageCache()
 
 class Surface(object):

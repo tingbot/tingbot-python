@@ -1,17 +1,49 @@
+import time
+
 from .utils import CallbackList
+from .run_loop import once
+
+event_types = ['press','long_press','down','up']
+long_click_time = 1.0
 
 class Button(object):
     def __init__(self):
-        self.callbacks = CallbackList()
+        self.callbacks = {x:CallbackList() for x in event_types}
         self.was_pressed = False
+        self.actions = []
+        self.pressed = False
+        self.down_time = 0
+        self.click_count = 0
 
-    def press(self):
-        self.was_pressed = True
+    def action(self,action):
+        if action=="down":
+            self.down_time = time.time()
+            self.click_count += 1
+            self.pressed_click_count = self.click_count
+            once(seconds=long_click_time)(lambda: self.long_press(self.click_count))
+        if action=="up":
+            if (time.time()-self.down_time)>long_click_time:
+                if self.pressed_click_count==self.click_count:
+                    #our requested timer has not fired - main event loop must be busy
+                    self.click_count +=1 #stops double fire when timer does run...
+                    self.actions.append('long_press')
+            else:
+                self.actions.append('press')
+                self.click_count +=1  
+        self.actions.append(action)
+        
+    def long_press(self,click_count):
+        #do nothing if click_counts do not match as means something has happened in the meantime.
+        if self.click_count==click_count:
+            self.actions.append('long_press')
+            self.click_count += 1
+            
 
     def run_callbacks_if_was_pressed(self):
-        if self.was_pressed:
-            self.callbacks()
-            self.was_pressed = False
+        for x in self.actions:
+            self.callbacks[x]()
+        self.actions = []
+
 
 buttons = {
     'left': Button(),
@@ -21,16 +53,20 @@ buttons = {
 }
 
 class press(object):
-    def __init__(self, button_name):
+    def __init__(self, button_name, event_type="down"):
         ensure_setup()
 
         if button_name not in buttons:
-            raise RuntimeError('Unknown button name "%s"' % button_name)
-
+            raise ValueError('Unknown button name "%s"' % button_name)
+        
         self.button = buttons[button_name]
 
+        if button_type not in press_types:
+            raise ValueError('Unknown event type "%s' % event_type)
+        self.event_type = event_type
+        
     def __call__(self, f):
-        self.button.callbacks.add(f)
+        self.button.callbacks[event_type].add(f)
         return f
 
 is_setup = False
@@ -54,8 +90,7 @@ def button_callback(button_index, action):
     button_name = button_names[button_index]
     button = buttons[button_name]
 
-    if action == 'down':
-        button.press()
+    button.press(action)
 
 def wait():
     for button in buttons.values():

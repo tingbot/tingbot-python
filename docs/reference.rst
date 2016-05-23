@@ -188,13 +188,21 @@ There are four buttons on the top of the Tingbot. These can be used in programs 
 This is a simple counter program. Whenever the right button is pressed, the score goes up by one. On
 the left button, the score goes down.
 
-.. py:decorator:: button.press(button_name…)
+.. py:decorator:: button.press(button_name=…, event_type="down")
 
     This 'decorator' marks the function to be called when a button is pressed.
 
     ``button_name`` can be one of: left, midleft, midright, right.
+    
+    ``event_type`` can be one of: down, up, press, long_press.
         
-    The function is called when the button is pressed. Nothing happens when the button is released.
+    The function is called when the button is pressed or released, depending on ``event_type``:
+    
+    * down: function is called as the button is pressed download
+    * up: function is called when the button is released
+    * press: function is called when the button is pressed for less than 1.0 seconds
+    * long_press: function is called when the button has been pressed for more than 1.0 seconds 
+      (this may be before the button is released)
 
     .. code-block:: python
         :caption: Example: Button handler

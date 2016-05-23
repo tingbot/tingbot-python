@@ -95,7 +95,7 @@ class WebImage(ImageEntry):
             return False
         return False
         
-class FileImage(object):
+class FileImage(ImageEntry):
     def __init__(self,filename):
         import graphics
         self.filename = filename
@@ -104,7 +104,10 @@ class FileImage(object):
         self.last_accessed=time.time()
 
     def is_fresh(self):
-        return self.last_modified==os.path.getmtime(self.filename)       
+        try:
+            return self.last_modified==os.path.getmtime(self.filename)       
+        except IOError:
+            return False
         
 class ImageCache(object):
     def __init__(self, cache_size = 2*10**6):
@@ -117,7 +120,7 @@ class ImageCache(object):
             if self.images[location].is_fresh():
                 return self.images[location].get_image()
             else:
-                sel.del_image(location)
+                self.del_image(location)
         if is_url(location):
             self.images[location] = WebImage(location)
         else:

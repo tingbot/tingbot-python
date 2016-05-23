@@ -339,7 +339,8 @@ class Image(Surface):
         surface = surface or pygame.Surface(size)
         super(Image, self).__init__(surface)
 
-
+    def get_memory_usage(self):
+        return self.surface.get_buffer().length
 
 class GIFImage(Surface):
     def __init__(self, image_file): #image_file can be either a file-like object or filename
@@ -394,7 +395,7 @@ class GIFImage(Surface):
             else:
                 palette = base_palette
 
-            pygame_image = pygame.image.fromstring(pil_image.tostring(), pil_image.size, pil_image.mode)
+            pygame_image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
             pygame_image.set_palette(palette)
 
             if "transparency" in pil_image.info:
@@ -427,3 +428,8 @@ class GIFImage(Surface):
 
             if frame_time >= gif_time:
                 return surface
+                
+    def get_memory_usage(self):
+        return sum(x[0].get_buffer().length for x in self.frames)
+                
+                

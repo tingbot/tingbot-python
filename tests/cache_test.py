@@ -166,16 +166,18 @@ class TestFileImage(unittest.TestCase):
         mtime.return_value = 300
         self.assertFalse(f.is_fresh())
     
-class TestImageCache(unittest.TestCase):
+class TestImageCache(TimeControlCase):
     def setUp(self):
+        super(TestImageCache,self).setUp()
         httpretty.enable()
         self.image_content = open("tingbot/broken_image.png",'r').read()
         self.tiny_content = open("tests/blank.png",'r').read()
         httpretty.register_uri(httpretty.GET,re.compile("http://example.com/..png"), body=self.image_content)
-        httpretty.register_uri(httpretty.GET,re.compile("http://example.com/tiny/..png"), body=self.image_content)
+        httpretty.register_uri(httpretty.GET,re.compile("http://example.com/tiny/..png"), body=self.tiny_content)
         
     def tearDown(self):
         httpretty.disable()
+        super(TestImageCache,self).tearDown()
 
     def test_can_init(self):
         c = cache.ImageCache()
@@ -217,4 +219,12 @@ class TestImageCache(unittest.TestCase):
         self.assertFalse(tiny_url_b in c.images)
         self.assertTrue(url_d in c.images)
                 
-        
+    def test_successfully_reloads_an_expired_file(self):
+        httpretty.register_uri(httpretty.GET,re.compile("http://example.com/x/1.png"), body=self.image_content, etag="a", max_age="300")
+        c = cache.ImageCache()
+        a = c.get_image("http://example.com/x/1.png")
+        httpretty.register_uri(httpretty.GET,re.compile("http://example.com/x/1.png"), body=self.image_content, etag="b", max_age="300")
+        httpretty.register_uri(httpretty.HEAD,re.compile("http://example.com/x/1.png"), etag="b", max_age="300")
+        time.time.tm=1400
+        b = c.get_image("http://example.com/x/1.png")
+

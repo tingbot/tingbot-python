@@ -56,7 +56,7 @@ class ImageEntry(object):
         return self.image  
         
     def get_size(self):
-        return self.image.surface.get_buffer().length  
+        return self.image.get_memory_usage() 
     
 
 class WebImage(ImageEntry):

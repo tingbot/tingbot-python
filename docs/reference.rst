@@ -20,7 +20,7 @@ Screen
 
         screen.fill(color=(255, 0, 0))
 
-.. py:function:: screen.text(string…, xy=…, color=…, align=…, font=…, font_size=…)
+.. py:function:: screen.text(string…, xy=…, color=…, align=…, font=…, font_size=…, max_width=…, max_lines=…, max_height=…)
 
     Draws text ``string``.
 
@@ -51,6 +51,16 @@ Screen
         :caption: Example: Changing the text size
 
         screen.text('Hello world!', color='black', font_size=50)
+
+    .. code-block:: python
+        :caption: Example: Confining text to a single line
+
+        screen.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit!', color='black', max_lines=1)
+
+    .. code-block:: python
+        :caption: Example: Confining text to two lines
+
+        screen.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit!', color='black', max_width=300, max_lines=2)
 
 
 .. py:function:: screen.rectangle(xy=…, size=…, color=…, align=…)

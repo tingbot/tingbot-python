@@ -1,4 +1,5 @@
-import os, time, numbers, math, io, warnings
+# coding: utf8
+import os, time, numbers, math, io, warnings, sys
 import pygame
 import requests
 try:
@@ -176,13 +177,20 @@ class Surface(object):
     def fill(self, color):
         self._fill(_color(color))
 
-    def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None):
+    def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None, max_width=None, max_lines=sys.maxsize):
+        if xy is None:
+            if max_width is None:
+                max_width = 320
+
         text_image = Image.from_text(
             string,
             color=color,
             font=font,
             font_size=font_size,
-            antialias=antialias)
+            antialias=antialias,
+            max_lines=max_lines,
+            max_width=max_width,
+            align=_anchor(align)[0])
 
         self.image(text_image, xy, align=align)
 
@@ -341,14 +349,16 @@ class Image(Surface):
 
 
     @classmethod
-    def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None):
+    def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None, max_lines=sys.maxsize, max_width=sys.maxsize, align=0):
         font, antialias = _font(font, font_size, antialias)
+        color = _color(color)
         string = unicode(string)
 
-        if antialias is None:
-            antialias
+        from .typesetter import render_text
 
-        return cls(surface=font.render(string, antialias, _color(color)))
+        surface = render_text(string, font, antialias, color, max_lines, max_width, ellipsis=u'…', align=align)
+
+        return cls(surface=surface)
 
     def __init__(self, surface=None, size=None):
         pygame.init()

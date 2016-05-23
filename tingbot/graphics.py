@@ -177,10 +177,12 @@ class Surface(object):
     def fill(self, color):
         self._fill(_color(color))
 
-    def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None, max_width=None, max_lines=sys.maxsize):
+    def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None, max_width=sys.maxsize, max_height=sys.maxsize, max_lines=sys.maxsize):
         if xy is None:
-            if max_width is None:
+            if max_width == sys.maxsize:
                 max_width = 320
+            if max_height == sys.maxsize:
+                max_height = 240
 
         text_image = Image.from_text(
             string,
@@ -190,6 +192,7 @@ class Surface(object):
             antialias=antialias,
             max_lines=max_lines,
             max_width=max_width,
+            max_height=max_height,
             align=_anchor(align)[0])
 
         self.image(text_image, xy, align=align)
@@ -347,14 +350,17 @@ class Image(Surface):
 
         return cls(surface)
 
-
     @classmethod
-    def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None, max_lines=sys.maxsize, max_width=sys.maxsize, align=0):
+    def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None, max_lines=sys.maxsize, max_width=sys.maxsize, max_height=sys.maxsize, align=0):
         font, antialias = _font(font, font_size, antialias)
         color = _color(color)
         string = unicode(string)
 
         from .typesetter import render_text
+
+        if max_height != sys.maxsize:
+            line_height = font.get_linesize()
+            max_lines = min(max_lines, int(max_height/line_height))
 
         surface = render_text(string, font, antialias, color, max_lines, max_width, ellipsis=u'…', align=align)
 

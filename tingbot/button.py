@@ -1,4 +1,5 @@
 import time
+import threading
 
 from .utils import CallbackList
 from .run_loop import once
@@ -14,6 +15,12 @@ class Button(object):
         self.pressed = False
         self.down_time = 0
         self.click_count = 0
+        self.lock = threading.Lock()
+        
+    def add_action(self,action):
+        self.lock.acquire()
+        self.actions.append(action)
+        self.lock.release()
 
     def action(self,action):
         if action=="down":
@@ -26,23 +33,25 @@ class Button(object):
                 if self.pressed_click_count==self.click_count:
                     #our requested timer has not fired - main event loop must be busy
                     self.click_count +=1 #stops double fire when timer does run...
-                    self.actions.append('long_press')
+                    self.add_action('long_press')
             else:
-                self.actions.append('press')
+                self.add_action('press')
                 self.click_count +=1  
-        self.actions.append(action)
+        self.add_action(action)
         
     def long_press(self,click_count):
         #do nothing if click_counts do not match as means something has happened in the meantime.
         if self.click_count==click_count:
-            self.actions.append('long_press')
+            self.add_action('long_press')
             self.click_count += 1
             
 
-    def run_callbacks_if_was_pressed(self):
+    def run_callbacks(self):
+        self.lock.acquire()
         for x in self.actions:
             self.callbacks[x]()
         self.actions = []
+        self.lock.release()
 
 
 buttons = {
@@ -94,4 +103,4 @@ def button_callback(button_index, action):
 
 def wait():
     for button in buttons.values():
-        button.run_callbacks_if_was_pressed()
+        button.run_callbacks()

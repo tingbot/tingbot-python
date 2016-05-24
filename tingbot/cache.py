@@ -10,6 +10,13 @@ from urlparse import urlparse
 
 def get_http_timestamp(dt):
     return calendar.timegm(rfc822.parsedate(dt))
+    
+def get_server_date(response):
+    try:
+        return get_http_timestamp(response.headers['date'])
+    except (KeyError,TypeError):
+        #no date supplied, have to assume no time offset
+        return time.time()
 
 def get_last_modified(response):
     """try and determine the last_modified time of a request"""
@@ -29,11 +36,11 @@ def get_max_age(response,last_modified):
     except (KeyError,ValueError):
         pass
     try:
-        return get_http_timestamp(response.headers['expires']) - time.time()
+        return get_http_timestamp(response.headers['expires']) - get_server_date(response)
     except (KeyError,TypeError):
         #really no info from server  so guess based on last-modified
         if last_modified:
-            return min(24*60*60,(time.time()-last_modified)/10)
+            return min(24*60*60,(get_server_date()-last_modified)/10)
         else:
             #not even a last_modified - so conservative guess of 60s
             return 60
@@ -52,7 +59,7 @@ def is_url(loc):
 class ImageEntry(object):
     #abstract base class
     def get_image(self):
-        self.last_accessed = time.time()
+        self.last_accessed = time.time()#local time
         return self.image  
         
     def get_size(self):
@@ -68,17 +75,17 @@ class WebImage(ImageEntry):
         self.set_attributes(response)
         image_file = io.BytesIO(response.content)        
         self.image = graphics.Image.load_file(image_file,url)
-        self.last_accessed = time.time()
-        self.retrieved = time.time()       
+        self.last_accessed = time.time() #local time
+        self.retrieved = time.time() #local time
         
     def set_attributes(self,response):    
-        self.last_modified = get_last_modified(response)
-        self.max_age  = get_max_age(response,self.last_modified)
+        self.last_modified = get_last_modified(response) #server time
+        self.max_age  = get_max_age(response,self.last_modified) #seconds unit, no timeframe
         self.etag = get_etag(response)
         
     def is_fresh(self):
         now = time.time()
-        if (now-self.retrieved)<self.max_age:
+        if (now-self.retrieved)<self.max_age: #local time - local time 
             return True
         try:
             response = requests.head(self.url)

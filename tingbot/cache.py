@@ -40,7 +40,7 @@ def get_max_age(response,last_modified):
     except (KeyError,TypeError):
         #really no info from server  so guess based on last-modified
         if last_modified:
-            return min(24*60*60,(get_server_date()-last_modified)/10)
+            return min(24*60*60,(get_server_date(response)-last_modified)/10)
         else:
             #not even a last_modified - so conservative guess of 60s
             return 60

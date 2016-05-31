@@ -51,7 +51,7 @@ button_pin_to_index = {
 
 def button_setup():
     import RPi.GPIO as GPIO
-    
+
     GPIO.setmode(GPIO.BOARD)
     GPIO.setwarnings(False)
 
@@ -59,11 +59,28 @@ def button_setup():
         GPIO.setup(button_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.add_event_detect(button_pin, GPIO.BOTH, bouncetime=200, callback=GPIO_callback)
 
+button_previous_states = {
+    0: 'up',
+    1: 'up',
+    2: 'up',
+    3: 'up',
+}
+
 def GPIO_callback(pin):
     import RPi.GPIO as GPIO
 
     button_index = button_pin_to_index[pin]
-    action = 'down' if GPIO.input(pin) else 'up'
+    state = 'down' if GPIO.input(pin) else 'up'
 
     if button_callback is not None:
-        button_callback(button_index, action)
+        # there is a race condition between the kernel seeing the change in the GPIO and
+        # the above code running - so the GPIO input might have changed since then. In this case,
+        # we can miss button presses. But we know _something_ happened on the GPIO, so we can at
+        # least synthesise a 'toggle' event - this will be right most of the time.
+        if state == button_previous_states[button_index]:
+            toggle_state = 'up' if (state == 'down') else 'down'
+            button_callback(button_index, state)
+
+        button_callback(button_index, state)
+
+    button_previous_states[button_index] = state

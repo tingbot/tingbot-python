@@ -107,7 +107,7 @@ def ensure_setup():
 class press(object):
     def __init__(self,button):
         warnings.warn(
-            'press is deprecated. Use <button_name>.down (or up,press, or hold) instead.',
+            'press is deprecated. Use <button_name>.down (or up, press, or hold) instead.',
             DeprecationWarning,
             stacklevel=2)
         self.button = buttons[button]

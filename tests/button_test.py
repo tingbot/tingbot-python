@@ -48,5 +48,3 @@ class ButtonTestCase(unittest.TestCase):
         self.button.add_event('up', timestamp=2.2)
         self.button.process_events(time=4.1)
         self.assertActions(['down', 'up', 'press','down', 'up', 'press'])
-
-

@@ -58,41 +58,42 @@ class Button(object):
 
     def fire(self, action):
         self.actions.append(action)
-        
+
     def run_callbacks(self):
         for action in self.actions:
             self.callbacks[action.type]()
         self.actions = []
-        
-    def add_event(self,action,timestamp=None):
+
+    def add_event(self, action, timestamp=None):
         if timestamp is None:
             timestamp = time.time()
-        self.event_queue.put(ButtonEvent(action,timestamp))
+        self.event_queue.put(ButtonEvent(action, timestamp))
 
-    def add_callback(self,event,func):
+    def add_callback(self, event, func):
         ensure_setup()
         self.callbacks[event].add(func)
-        
-    def __call__(self,f):
+
+    def __call__(self, f):
         print "calling"
         self.down(f)
-       
-    def down(self,f):
-        self.add_callback('down',f)
 
-    def up(self,f):
-        self.add_callback('up',f)
+    def down(self, f):
+        self.add_callback('down', f)
 
-    def press(self,f):
-        self.add_callback('press',f)
+    def up(self, f):
+        self.add_callback('up', f)
 
-    def hold(self,f):
-        self.add_callback('hold',f)
+    def press(self, f):
+        self.add_callback('press', f)
 
-#create buttons
-button_names = ('left','midleft','midright','right')
+    def hold(self, f):
+        self.add_callback('hold', f)
+
+# create buttons
+button_names = ('left', 'midleft', 'midright', 'right')
 buttons = {x:Button() for x in button_names}
-(left_button,midleft_button,midright_button,right_button) = [buttons[x] for x in button_names]
+left_button, midleft_button, midright_button, right_button = [buttons[x] for x in button_names]
+
 
 is_setup = False
 
@@ -101,16 +102,16 @@ def ensure_setup():
     if not is_setup:
         setup()
     is_setup = True
-    
+
 class press(object):
-    def __init__(self,button):
+    def __init__(self, button):
         warnings.warn(
             'press is deprecated. Use <button_name>.down (or up, press, or hold) instead.',
             DeprecationWarning,
             stacklevel=2)
         self.button = buttons[button]
-    
-    def __call__(self,f):
+
+    def __call__(self, f):
         self.button.down(f)
 
 

@@ -9,7 +9,8 @@ from .utils import CallbackList
 ButtonEvent = namedtuple('ButtonEvent', ('state', 'timestamp',))
 ButtonAction = namedtuple('ButtonAction', ('type', 'timestamp',))
 
-event_types = ['press','hold','down','up']
+action_types = ['press', 'hold', 'down', 'up']
+
 
 class Button(object):
     def __init__(self):
@@ -17,7 +18,7 @@ class Button(object):
         self.last_event = None
         self.hold_time = 1.0
         self.last_hold_check_time = 0
-        self.callbacks = {x:CallbackList() for x in event_types}
+        self.callbacks = {x:CallbackList() for x in action_types}
         self.actions = []
 
     def process_events(self, time):

@@ -1,14 +1,10 @@
 import unittest
-import time
-from tests.utils import TimeControlCase
 from tingbot.button import Button
-import tingbot.button
+
 
 class ButtonTestCase(unittest.TestCase):
     def setUp(self):
         self.button = Button()
-        global fired_actions
-        fired_actions = []
 
     def assertActions(self, action_types):
         self.assertEqual(action_types, [a.type for a in self.button.actions])

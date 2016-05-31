@@ -2,16 +2,14 @@ import time
 import threading
 import warnings
 from collections import namedtuple
-import Queue, unittest
+import Queue
 
 from .utils import CallbackList
-from .run_loop import once
 
 ButtonEvent = namedtuple('ButtonEvent', ('state', 'timestamp',))
 ButtonAction = namedtuple('ButtonAction', ('type', 'timestamp',))
 
 event_types = ['press','hold','down','up']
-long_click_time = 1.0
 
 class Button(object):
     def __init__(self):

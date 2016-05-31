@@ -4,48 +4,53 @@ from tests.utils import TimeControlCase
 from tingbot.button import Button
 import tingbot.button
 
-class TestButton(TimeControlCase):
-    def test_creation(self):
-        button = Button()
-    
-    def test_simple_press(self):
-        button = Button()
-        button.action("down")
-        button.action("up")
-        self.assertEqual(button.actions,["down","press","up"])
-        
-    def test_basic_long_press(self):
-        button = Button()
-        button.action("down")
-        time.time.tm = 1000.1 +tingbot.button.long_click_time
-        button.long_press(button.click_count)
-        button.action("up")
-        self.assertEqual(button.actions,["down","long_press","up"])
-        
-    def test_interrupted_long_press(self):
-        button = Button()
-        button.action("down")
-        click_count = button.click_count
-        time.time.tm = 1000.1 +tingbot.button.long_click_time
-        button.action("up")
-        button.long_press(click_count)
-        self.assertEqual(button.actions,["down","long_press","up"])
+class ButtonTestCase(unittest.TestCase):
+    def setUp(self):
+        self.button = Button()
+        global fired_actions
+        fired_actions = []
 
-    def test_repeated_presses(self):
-        button = Button()
-        button.action("down")
-        button.action("up")
-        time.time.tm = 1000.5 + tingbot.button.long_click_time
-        button.action("down")
-        button.action("up")
-        self.assertEqual(button.actions,["down","press","up","down","press","up"])
+    def assertActions(self, action_types):
+        self.assertEqual(action_types, [a.type for a in self.button.actions])
+
+    def testPress(self):
+        self.button.add_event('down', timestamp=1)
+        self.button.add_event('up', timestamp=1.5)
+        self.button.process_events(time=2)
+        self.assertActions(['down', 'up', 'press'])
+
+    def testHold(self):
+        self.button.add_event('down', timestamp=1)
+        self.button.add_event('up', timestamp=3)
+        self.button.process_events(3.1)
+        self.assertActions(['down', 'hold', 'up'])
+
+    def testIncrementalHold(self):
+        self.button.add_event('down', timestamp=1)
+        self.button.process_events(time=1.1)
+        self.assertActions(['down'])
+
+        self.button.process_events(time=2.1)
+        self.assertActions(['down', 'hold'])
+
+        self.button.add_event('up', timestamp=3)
+        self.button.process_events(time=3.1)
+        self.assertActions(['down', 'hold', 'up'])
         
-    def test_close_repeated_presses(self):    
-        button = Button()
-        button.action("down")
-        button.action("up")
-        time.time.tm = 1000.5
-        button.action("down")
-        button.action("up")
-        self.assertEqual(button.actions,["down","press","up","down","press","up"])
-    
+    def testRepeatedPress(self):
+        self.button.add_event('down', timestamp=1)
+        self.button.add_event('up', timestamp=1.5)
+        self.button.add_event('down', timestamp=3.5)
+        self.button.add_event('up', timestamp=4.0)
+        self.button.process_events(time=4.1)
+        self.assertActions(['down', 'up', 'press','down', 'up', 'press'])
+        
+    def testRepeatedQuickPress(self):
+        self.button.add_event('down', timestamp=1)
+        self.button.add_event('up', timestamp=1.5)
+        self.button.add_event('down', timestamp=1.6)
+        self.button.add_event('up', timestamp=2.2)
+        self.button.process_events(time=4.1)
+        self.assertActions(['down', 'up', 'press','down', 'up', 'press'])
+
+

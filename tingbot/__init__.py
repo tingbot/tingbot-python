@@ -1,3 +1,4 @@
+import warnings
 try:
     import pygame
 except ImportError:
@@ -23,6 +24,9 @@ from .input import touch
 from .button import press,left_button,midleft_button,midright_button,right_button
 from .web import webhook
 from .tingapp import app
+
+#enable deprecation warnings
+warnings.filterwarnings("once",".*",DeprecationWarning)
 
 platform_specific.fixup_env()
 

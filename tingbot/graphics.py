@@ -2,10 +2,6 @@ import os, time, numbers, math, io, warnings
 import pygame
 import requests
 import cache
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
 from .utils import cached_property
 
 # colors from http://clrs.cc/

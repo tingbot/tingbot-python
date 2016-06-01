@@ -428,8 +428,6 @@ class GIFImage(Surface):
 
             if frame_time >= gif_time:
                 return surface
-                
+
     def get_memory_usage(self):
         return sum(x[0].get_buffer().length for x in self.frames)
-                
-                

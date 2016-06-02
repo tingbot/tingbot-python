@@ -192,6 +192,11 @@ class TestImageCache(TimeControlCase):
         image = c.get_image('tests/GifSample.gif')    
         self.assertIsInstance(image,graphics.GIFImage)
         
+    def test_loads_one_massive_file(self):
+        c = cache.ImageCache(100)
+        image = c.get_image("http://example.com/a.png")
+        self.assertIsInstance(image,graphics.Image)
+        
     def test_removes_a_file_when_full(self):
         image_size = cache.WebImage('http://example.com/a.png').get_size()
         c = cache.ImageCache(image_size+1)

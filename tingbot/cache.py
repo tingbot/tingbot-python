@@ -129,15 +129,17 @@ class ImageCache(object):
             else:
                 self.del_image(location)
         if is_url(location):
-            self.images[location] = WebImage(location)
+            image = WebImage(location)
         else:
-            self.images[location] = FileImage(location)
+            image = FileImage(location)
+        self.images[location] = image
         self.size += self.images[location].get_size()
-        while self.size > self.cache_size:
-            oldest_location = sorted(self.images, key=lambda a:self.images[a].last_accessed)[0]
-            self.del_image(oldest_location)
-
-        return self.images[location].get_image()
+        for key in sorted(self.images, key=lambda a:self.images[a].last_accessed):
+            if self.size<=self.cache_size:
+                break
+            elif key!=location:
+                self.del_image(key)
+        return image.image
 
     def del_image(self, location):
         self.size -= self.images[location].get_size()

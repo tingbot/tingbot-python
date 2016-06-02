@@ -6,6 +6,7 @@ import calendar
 import requests
 import io
 import os
+import threading
 from urlparse import urlparse
 
 def get_http_timestamp(dt):
@@ -121,26 +122,29 @@ class ImageCache(object):
         self.images = {}
         self.size = 0
         self.cache_size = cache_size
+        self.lock = threading.RLock()
 
     def get_image(self, location):
-        if location in self.images:
-            if self.images[location].is_fresh():
-                return self.images[location].get_image()
+        with self.lock:
+            if location in self.images:
+                if self.images[location].is_fresh():
+                    return self.images[location].get_image()
+                else:
+                    self.del_image(location)
+            if is_url(location):
+                image = WebImage(location)
             else:
-                self.del_image(location)
-        if is_url(location):
-            image = WebImage(location)
-        else:
-            image = FileImage(location)
-        self.images[location] = image
-        self.size += self.images[location].get_size()
-        for key in sorted(self.images, key=lambda a:self.images[a].last_accessed):
-            if self.size<=self.cache_size:
-                break
-            elif key!=location:
-                self.del_image(key)
-        return image.image
+                image = FileImage(location)
+            self.images[location] = image
+            self.size += self.images[location].get_size()
+            for key in sorted(self.images, key=lambda a:self.images[a].last_accessed):
+                if self.size<=self.cache_size:
+                    break
+                elif key!=location:
+                    self.del_image(key)
+            return image.image
 
     def del_image(self, location):
-        self.size -= self.images[location].get_size()
-        del self.images[location]
+        with self.lock:
+            self.size -= self.images[location].get_size()
+            del self.images[location]

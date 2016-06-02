@@ -2,10 +2,6 @@ import os, time, numbers, math, io, warnings
 import pygame
 import requests
 import cache
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
 from .utils import cached_property
 
 # colors from http://clrs.cc/
@@ -428,8 +424,6 @@ class GIFImage(Surface):
 
             if frame_time >= gif_time:
                 return surface
-                
+
     def get_memory_usage(self):
         return sum(x[0].get_buffer().length for x in self.frames)
-                
-                

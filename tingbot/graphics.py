@@ -390,8 +390,10 @@ class GIFImage(Surface):
                     palette = base_palette
             else:
                 palette = base_palette
-
-            pygame_image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
+            try: # account for different versions of Pillow
+                pygame_image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
+            except AttributeError:
+                pygame_image = pygame.image.fromstring(pil_image.tostring(), pil_image.size, pil_image.mode)
             pygame_image.set_palette(palette)
 
             if "transparency" in pil_image.info:

@@ -43,7 +43,10 @@ def run(loop=None):
 
     main_run_loop.run()
 
-__all__ = ['run', 'screen', 'Surface', 'Image', 'every', 'touch', 'press', 'button', 'webhook']
+__all__ = [
+    'run', 'screen', 'Surface', 'Image', 'every', 'touch', 'press', 'button', 'webhook',
+    'left_button', 'midleft_button', 'midright_button', 'right_button',
+]
 __author__ = 'Joe Rickerby'
 __email__ = 'joerick@mac.com'
 __version__ = '0.3'

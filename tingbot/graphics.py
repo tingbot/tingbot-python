@@ -2,10 +2,7 @@
 import os, time, numbers, math, io, warnings, sys
 import pygame
 import requests
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
+import cache
 from .utils import cached_property
 
 # colors from http://clrs.cc/
@@ -126,21 +123,7 @@ def _topleft_from_aligned_xy(xy, align, size, surface_size):
     anchor_offset = _xy_multiply(_anchor(align), size)
     return _xy_subtract(xy, anchor_offset)
 
-def _is_url(loc):
-    """returns true if loc is a url, and false if not"""
-    return (urlparse(loc).scheme != '')
-
-class ImageCache(object):
-    def __init__(self):
-        self.cache = {}
-
-    def image_for_name(self, name):
-        if name not in self.cache:
-            self.cache[name] = Image.load_filename(name)
-
-        return self.cache[name]
-
-image_cache = ImageCache()
+image_cache = cache.ImageCache()
 
 class Surface(object):
     def __init__(self, surface=None):
@@ -237,15 +220,12 @@ class Surface(object):
     def image(self, image, xy=None, scale=1, align='center', raise_error=True):
         if isinstance(image, basestring):
             try:
-                if _is_url(image):
-                    image = Image.load_url(image)
-                else:
-                    image = image_cache.image_for_name(image)
+                image = image_cache.get_image(image)
             except IOError:
                 if raise_error:
                     raise
                 else:
-                    image = image_cache.image_for_name(broken_image_file)
+                    image = image_cache.get_image(broken_image_file)
 
         scale = _scale(scale)
         image_size = image.size
@@ -371,7 +351,8 @@ class Image(Surface):
         surface = surface or pygame.Surface(size)
         super(Image, self).__init__(surface)
 
-
+    def get_memory_usage(self):
+        return self.surface.get_buffer().length
 
 class GIFImage(Surface):
     def __init__(self, image_file): #image_file can be either a file-like object or filename
@@ -425,8 +406,10 @@ class GIFImage(Surface):
                     palette = base_palette
             else:
                 palette = base_palette
-
-            pygame_image = pygame.image.fromstring(pil_image.tostring(), pil_image.size, pil_image.mode)
+            try: # account for different versions of Pillow
+                pygame_image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
+            except AttributeError:
+                pygame_image = pygame.image.fromstring(pil_image.tostring(), pil_image.size, pil_image.mode)
             pygame_image.set_palette(palette)
 
             if "transparency" in pil_image.info:
@@ -459,3 +442,6 @@ class GIFImage(Surface):
 
             if frame_time >= gif_time:
                 return surface
+
+    def get_memory_usage(self):
+        return sum(x[0].get_buffer().length for x in self.frames)

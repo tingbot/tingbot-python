@@ -13,6 +13,7 @@ requirements = [
     'pyzmq',
     'docopt',
     'virtualenv',
+    'requests'
 ]
 
 setup(
@@ -46,5 +47,5 @@ setup(
         ],
     },
     test_suite='tests',
-
+    tests_require=['httpretty','mock'],
 )

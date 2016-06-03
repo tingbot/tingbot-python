@@ -125,24 +125,31 @@ class ImageCache(object):
         self.lock = threading.RLock()
 
     def get_image(self, location):
-        with self.lock:
-            if location in self.images:
-                if self.images[location].is_fresh():
-                    return self.images[location].get_image()
-                else:
-                    self.del_image(location)
-            if is_url(location):
-                image = WebImage(location)
-            else:
-                image = FileImage(location)
-            self.images[location] = image
-            self.size += self.images[location].get_size()
-            for key in sorted(self.images, key=lambda a:self.images[a].last_accessed):
-                if self.size<=self.cache_size:
-                    break
-                elif key!=location:
-                    self.del_image(key)
+        image = self.images.get(location)
+        if image and image.is_fresh():
             return image.image
+        if is_url(location):
+            image = WebImage(location)
+        else:
+            image = FileImage(location)
+        self.add_image(location,image)
+        return image.image        
+            
+    def add_image(self,location, image):
+        with self.lock:
+            #delete image if already in cache and being over-written
+            if location in self.images:
+                self.del_image(location)
+            self.images[location] = image
+            self.size += image.get_size()
+
+            #clean out cache if too big
+            if self.size > self.cache_size:
+                for key in sorted(self.images, key=lambda a:self.images[a].last_accessed):
+                    if self.size<=self.cache_size:
+                        break
+                    elif key!=location:
+                        self.del_image(key)
 
     def del_image(self, location):
         with self.lock:

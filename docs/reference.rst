@@ -20,7 +20,7 @@ Screen
 
         screen.fill(color=(255, 0, 0))
 
-.. py:function:: screen.text(string…, xy=…, color=…, align=…, font=…, font_size=…)
+.. py:function:: screen.text(string…, xy=…, color=…, align=…, font=…, font_size=…, max_width=…, max_lines=…, max_height=…)
 
     Draws text ``string``.
 
@@ -51,6 +51,16 @@ Screen
         :caption: Example: Changing the text size
 
         screen.text('Hello world!', color='black', font_size=50)
+
+    .. code-block:: python
+        :caption: Example: Confining text to a single line
+
+        screen.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit!', color='black', max_lines=1)
+
+    .. code-block:: python
+        :caption: Example: Confining text to two lines
+
+        screen.text('Lorem ipsum dolor sit amet, consectetur adipiscing elit!', color='black', max_width=300, max_lines=2)
 
 
 .. py:function:: screen.rectangle(xy=…, size=…, color=…, align=…)
@@ -158,11 +168,11 @@ There are four buttons on the top of the Tingbot. These can be used in programs 
 
     state = {'score': 0}
 
-    @button.press('left')
+    @left_button.press
     def on_left():
         state['score'] -= 1
 
-    @button.press('right')
+    @right_button.press
     def on_right():
         state['score'] += 1
 
@@ -178,30 +188,44 @@ There are four buttons on the top of the Tingbot. These can be used in programs 
 This is a simple counter program. Whenever the right button is pressed, the score goes up by one. On
 the left button, the score goes down.
 
-.. py:decorator:: button.press(button_name…)
+.. py:decorator:: button.press
 
     This 'decorator' marks the function to be called when a button is pressed.
 
-    ``button_name`` can be one of: left, midleft, midright, right.
-        
-    The function is called when the button is pressed. Nothing happens when the button is released.
-
+    ``button`` can be one of: left_button, midleft_button, midright_button, right_button.
+    
     .. code-block:: python
         :caption: Example: Button handler
 
-        @button.press('left')
+        @left_button.press
         def on_left():
             state['score'] -= 1
 
     .. code-block:: python
         :caption: Example: Button handler for all buttons
 
-        @button.press('left')
-        @button.press('midleft')
-        @button.press('midright')
-        @button.press('right')
+        @left_button.press
+        @midleft_button.press
+        @midright_button.press
+        @right_button.press
         def on_button():
             state['score'] -= 1
+
+    Only presses shorter than a second count - anything longer counts as a 'hold' event.
+
+.. py:decorator:: button.hold
+
+    This marks the function to be called when a button is held down for longer than a
+    second.
+
+.. py:decorator:: button.down
+
+    This marks the function to be called as soon as a button is pushed down. This could
+    be the start of a 'press' or a 'hold' event.
+
+.. py:decorator:: button.up
+
+    This marks the function to be called when a button is released.
 
 Webhooks
 --------
@@ -244,6 +268,49 @@ elsewhere on the internet.
 
     `IFTTT <http://ifttt.com>`_ is a great place to start for ideas for webhooks. 
     `Slack <http://slack.com>`_ also has native support for webhooks!
+    
+    
+Settings
+--------
+
+You can store local data on the tingbot. Simply use `tingbot.app.settings` as a `dict <http://learnpythonthehardway.org/book/ex39.html>`_. This will store
+any variables you like on a file in the application directory (called local_settings.json). This is
+stored in `JSON <http://www.w3resource.com/JSON/introduction.php>`_ format. As a developer you can also supply
+default settings for your app to start off with - specify these in default_settings.json. 
+
+.. code-block:: python
+
+    import tingbot
+    
+    #store an item
+    tingbot.app.settings['favourite_colour'] = 'red'
+    
+    #local_settings.json on disk now contains: {"favourite_colour":"red"}
+    
+    #retrieve an item
+    tingbot.screen.fill(tingbot.app.settings['favourite_colour'])
+
+Any item that can be converted into text can be used in tingbot.app.settings - so strings, ints, floats, and even dicts
+and lists can be used. However, beware, because if you assign to a subitem of `tingbot.app.settings`, this will not be
+automatically saved to disk. You can force a save by calling `tingbot.app.settings.save()`
+
+.. code-block:: python
+
+    import tingbot
+    
+    #create a sub-dictionary
+    tingbot.app.settings['ages'] = {'Phil':39,'Mabel',73}
+    
+    #local_settings.json on disk now contains: {"ages":{"Phil":39,"Mabel":73}}
+    
+    tingbot.app.settings['ages']['Barry'] = 74
+    
+    #Warning: local_settings.json has not been updated because you haven't directly changed tingbot.app.settings
+    
+    tingbot.app.settings.save()
+    
+    #now local_settings.json on disk now contains: {"ages":{"Phil":39,"Mabel":73,"Barry":74}}
+
 
 Run loop
 --------

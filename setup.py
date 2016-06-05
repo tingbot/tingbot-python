@@ -13,7 +13,8 @@ requirements = [
     'pyzmq',
     'docopt',
     'virtualenv',
-    'requests'
+    'requests',
+    'Pillow',
 ]
 
 setup(

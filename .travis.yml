@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.7"
+virtualenv:
+  # let the tests pick up the system-installed pygame
+  system_site_packages: true
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install python-pygame
+install: "pip install -r requirements_dev.txt"
+script: python setup.py test

@@ -41,23 +41,21 @@ def ensure_button_setup():
         button_setup()
     button_setup_done = True
 
-button_pins = (11, 16, 18, 12)
+button_pins = (17, 23, 24, 18)
 button_pin_to_index = {
-    11: 0,
-    16: 1,
-    18: 2,
-    12: 3
+    17: 0,
+    23: 1,
+    24: 2,
+    18: 3
 }
 
 def button_setup():
-    import RPi.GPIO as GPIO
-
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setwarnings(False)
+    import RPIO as GPIO
 
     for button_pin in button_pins:
-        GPIO.setup(button_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(button_pin, GPIO.BOTH, bouncetime=200, callback=GPIO_callback)
+        GPIO.add_interrupt_callback(button_pin, GPIO_callback, debounce_timeout_ms=5)
+
+    GPIO.wait_for_interrupts(threaded=True)
 
 button_previous_states = {
     0: 'up',
@@ -66,11 +64,9 @@ button_previous_states = {
     3: 'up',
 }
 
-def GPIO_callback(pin):
-    import RPi.GPIO as GPIO
-
+def GPIO_callback(pin, val):
     button_index = button_pin_to_index[pin]
-    state = 'down' if GPIO.input(pin) else 'up'
+    state = 'down' if (val == 1) else 'up'
 
     if button_callback is not None:
         # there is a race condition between the kernel seeing the change in the GPIO and
@@ -79,7 +75,7 @@ def GPIO_callback(pin):
         # least synthesise a 'toggle' event - this will be right most of the time.
         if state == button_previous_states[button_index]:
             toggle_state = 'up' if (state == 'down') else 'down'
-            button_callback(button_index, state)
+            button_callback(button_index, toggle_state)
 
         button_callback(button_index, state)
 

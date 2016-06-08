@@ -153,12 +153,12 @@ class Surface(object):
         elif len(color)>=4:
             if rect is None:
                 rect = (0,0)+self.size
-            tmp_surface = pygame.Surface(rect[2:3],pygame.SRCALPHA)
+            tmp_surface = pygame.Surface(rect.size,pygame.SRCALPHA)
             tmp_surface.fill(color)
             self.surface.blit(tmp_surface,rect)
 
     def fill(self, color):
-        self._fill(_color(color))
+        self._fill(_color(color),self.surface.get_rect())
 
     def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None, max_width=sys.maxsize, max_height=sys.maxsize, max_lines=sys.maxsize):
         if xy is None:
@@ -186,7 +186,7 @@ class Surface(object):
 
         xy = _topleft_from_aligned_xy(xy, align, size, self.size)
 
-        self._fill(_color(color), xy+size)
+        self._fill(_color(color), pygame.Rect(xy,size))
 
     def line(self, start_xy, end_xy, width=1, color='grey', antialias=True):
         # antialiased thick lines aren't supported by pygame, and the aaline function has some

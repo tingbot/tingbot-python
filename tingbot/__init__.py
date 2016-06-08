@@ -16,7 +16,7 @@ except ImportError:
     print ''
     raise
 
-from . import platform_specific, input
+from . import platform_specific, input, quit
 
 from .graphics import screen, Surface, Image
 from .run_loop import main_run_loop, every, once
@@ -29,7 +29,7 @@ from .tingapp import app
 warnings.filterwarnings("once",".*",DeprecationWarning)
 
 platform_specific.fixup_env()
-
+quit.fixup_sigterm_behaviour()
 
 def run(loop=None):
     if loop is not None:

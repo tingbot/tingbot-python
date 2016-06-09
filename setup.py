@@ -18,7 +18,7 @@ requirements = [
 ]
 
 setup(
-    name='tingbot',
+    name='tingbot-python',
     version='0.3.0',
     description="Python APIs to write apps for Tingbot",
     long_description=readme,

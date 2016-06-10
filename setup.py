@@ -20,7 +20,7 @@ requirements = [
 ]
 
 if 'arm' in platform.machine():
-    requirements.append('RPIO==t1')
+    requirements.append('wiringpi')
 
 setup(
     name='tingbot',
@@ -38,7 +38,6 @@ setup(
                  'tbtool': 'tbtool'},
     include_package_data=True,
     install_requires=requirements,
-    dependency_links=['https://github.com/tingbot/RPIO/archive/t1.zip#egg=RPIO-t1'],
     license="BSD",
     zip_safe=False,
     keywords='tingbot',

@@ -33,6 +33,7 @@ setup(
                  'tbtool': 'tbtool'},
     include_package_data=True,
     install_requires=requirements,
+    obsoletes=['tingbot'],
     license="BSD",
     zip_safe=False,
     keywords='tingbot',

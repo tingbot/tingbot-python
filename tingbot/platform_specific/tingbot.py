@@ -41,46 +41,33 @@ def ensure_button_setup():
         button_setup()
     button_setup_done = True
 
-button_pins = (11, 16, 18, 12)
+button_pins = (17, 23, 24, 18)
 button_pin_to_index = {
-    11: 0,
-    16: 1,
-    18: 2,
-    12: 3
+    17: 0,
+    23: 1,
+    24: 2,
+    18: 3
 }
 
 def button_setup():
-    import RPi.GPIO as GPIO
+    import wiringpi
 
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setwarnings(False)
+    wiringpi.wiringPiSetupGpio()
 
     for button_pin in button_pins:
-        GPIO.setup(button_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(button_pin, GPIO.BOTH, bouncetime=200, callback=GPIO_callback)
+        wiringpi.pinMode(button_pin, wiringpi.INPUT)
+        wiringpi.wiringPiISR(button_pin, wiringpi.INT_EDGE_BOTH, GPIO_callback)
 
-button_previous_states = {
-    0: 'up',
-    1: 'up',
-    2: 'up',
-    3: 'up',
-}
+button_previous_states = [0, 0, 0, 0]
 
-def GPIO_callback(pin):
-    import RPi.GPIO as GPIO
+def GPIO_callback():
+    import wiringpi
+    global button_previous_states
 
-    button_index = button_pin_to_index[pin]
-    state = 'down' if GPIO.input(pin) else 'up'
+    button_states = [wiringpi.digitalRead(pin) for pin in button_pins]
 
-    if button_callback is not None:
-        # there is a race condition between the kernel seeing the change in the GPIO and
-        # the above code running - so the GPIO input might have changed since then. In this case,
-        # we can miss button presses. But we know _something_ happened on the GPIO, so we can at
-        # least synthesise a 'toggle' event - this will be right most of the time.
-        if state == button_previous_states[button_index]:
-            toggle_state = 'up' if (state == 'down') else 'down'
-            button_callback(button_index, state)
+    for button_index, (old, new) in enumerate(zip(button_previous_states, button_states)):
+        if old != new:
+            button_callback(button_index, 'down' if (new == 1) else 'up')
 
-        button_callback(button_index, state)
-
-    button_previous_states[button_index] = state
+    button_previous_states = button_states

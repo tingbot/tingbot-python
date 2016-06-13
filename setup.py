@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import platform
+
 try:
     from setuptools import setup
 except ImportError:
@@ -16,6 +18,9 @@ requirements = [
     'requests',
     'Pillow',
 ]
+
+if 'arm' in platform.machine():
+    requirements.append('wiringpi')
 
 setup(
     name='tingbot-python',

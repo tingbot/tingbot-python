@@ -49,32 +49,39 @@ class RunLoop(object):
 
     def remove_timer(self,action):
         """remove a timer from the list"""
+        if self.next_timer.action == action: #account for being called from the timer requesting being stopped
+            self.next_timer.repeating = False
         self.timers[:] = [x for x in self.timers if x.action != action]
 
     def run(self):
-        while True:
+        self.running = True
+        while self.running:
             start_time = time.time()
 
             if len(self.timers) > 0:
-                next_timer = self.timers.pop()
+                self.next_timer = self.timers.pop()
 
                 try:
-                    self._wait(next_timer.next_fire_time)
+                    self._wait(self.next_timer.next_fire_time)
 
                     self._before_action_callbacks()
-                    next_timer.action()
+                    self.next_timer.action()
                     self._after_action_callbacks()
                 except Exception as e:
                     self._error(e)
                 finally:
-                    if next_timer.repeating:
-                        next_timer.next_fire_time = start_time + next_timer.period
-                        self.schedule(next_timer)
+                    if self.next_timer.repeating:
+                        self.next_timer.next_fire_time = start_time + self.next_timer.period
+                        self.schedule(self.next_timer)
             else:
                 try:
-                    self._wait(start_time + 1)
+                    self._wait(start_time + 0.1)
                 except Exception as e:
                     self._error(e)
+        self.running = True #prevent an outer loop from stopping if inner loop has been stopped
+
+    def stop(self):
+        self.running = False
 
     def add_wait_callback(self, callback):
         self._wait_callbacks.add(callback)

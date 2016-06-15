@@ -61,7 +61,7 @@ def GPIO_callback():
     button_states = [wiringpi.digitalRead(pin) for pin in button_pins]
 
     for button_index, (old, new) in enumerate(zip(button_previous_states, button_states)):
-        if old != new:
+        if old != new and button_callback is not None:
             button_callback(button_index, 'down' if (new == 1) else 'up')
 
     button_previous_states = button_states

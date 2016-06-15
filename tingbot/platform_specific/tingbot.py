@@ -42,12 +42,6 @@ def ensure_button_setup():
     button_setup_done = True
 
 button_pins = (17, 23, 24, 18)
-button_pin_to_index = {
-    17: 0,
-    23: 1,
-    24: 2,
-    18: 3
-}
 
 def button_setup():
     import wiringpi

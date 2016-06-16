@@ -34,6 +34,7 @@ class RunLoop(object):
         self._wait_callbacks = CallbackList()
         self._before_action_callbacks = CallbackList()
         self._after_action_callbacks = CallbackList()
+        self.current_timers= []
 
     def schedule(self, timer):
         if timer.next_fire_time is None:
@@ -49,8 +50,15 @@ class RunLoop(object):
 
     def remove_timer(self,action):
         """remove a timer from the list"""
-        if self.next_timer.action == action: #account for being called from the timer requesting being stopped
-            self.next_timer.repeating = False
+        if self.current_timers:
+            current_action = self.current_timers[-1].action
+        else:
+            current_action = None
+        if (action not in [x.action for x in self.timers] 
+            and action != current_action):
+                raise ValueError("Timer not found")
+        if current_action == action: #account for being called from the timer requesting being stopped
+            self.current_timers[-1].repeating = False
         self.timers[:] = [x for x in self.timers if x.action != action]
 
     def run(self):
@@ -59,20 +67,22 @@ class RunLoop(object):
             start_time = time.time()
 
             if len(self.timers) > 0:
-                self.next_timer = self.timers.pop()
+                next_timer = self.timers.pop()
+                self.current_timers.append(next_timer)
 
                 try:
-                    self._wait(self.next_timer.next_fire_time)
+                    self._wait(next_timer.next_fire_time)
 
                     self._before_action_callbacks()
-                    self.next_timer.action()
+                    next_timer.action()
                     self._after_action_callbacks()
                 except Exception as e:
                     self._error(e)
                 finally:
-                    if self.next_timer.repeating:
-                        self.next_timer.next_fire_time = start_time + self.next_timer.period
-                        self.schedule(self.next_timer)
+                    if next_timer.repeating:
+                        next_timer.next_fire_time = start_time + next_timer.period
+                        self.schedule(next_timer)
+                self.current_timers.pop()
             else:
                 try:
                     self._wait(start_time + 0.1)

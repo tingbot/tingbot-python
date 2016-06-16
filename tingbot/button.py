@@ -18,7 +18,7 @@ class Button(object):
         self.last_event = None
         self.hold_time = 1.0
         self.last_hold_check_time = 0
-        self.callbacks = {x:CallbackList() for x in action_types}
+        self.callbacks = {x: CallbackList() for x in action_types}
         self.actions = deque()
 
     def process_events(self, time):
@@ -92,7 +92,7 @@ class Button(object):
 
 # create buttons
 button_names = ('left', 'midleft', 'midright', 'right')
-buttons = {x:Button() for x in button_names}
+buttons = {x: Button() for x in button_names}
 left_button, midleft_button, midright_button, right_button = [buttons[x] for x in button_names]
 
 

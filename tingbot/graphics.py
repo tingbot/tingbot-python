@@ -147,16 +147,16 @@ class Surface(object):
     def size(self):
         return self.surface.get_size()
 
-    def _fill(self, color, rect = None):
-        if len(color)<=3:
-            self.surface.fill(color,rect)
-        elif len(color)>=4:
-            tmp_surface = pygame.Surface(rect.size,pygame.SRCALPHA)
+    def _fill(self, color, rect=None):
+        if len(color) <= 3:
+            self.surface.fill(color, rect)
+        elif len(color) >= 4:
+            tmp_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
             tmp_surface.fill(color)
-            self.surface.blit(tmp_surface,rect)
+            self.surface.blit(tmp_surface, rect)
 
     def fill(self, color):
-        self._fill(_color(color),self.surface.get_rect())
+        self._fill(_color(color), self.surface.get_rect())
 
     def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None, max_width=sys.maxsize, max_height=sys.maxsize, max_lines=sys.maxsize):
         if xy is None:
@@ -184,7 +184,7 @@ class Surface(object):
 
         xy = _topleft_from_aligned_xy(xy, align, size, self.size)
 
-        self._fill(_color(color), pygame.Rect(xy,size))
+        self._fill(_color(color), pygame.Rect(xy, size))
 
     def line(self, start_xy, end_xy, width=1, color='grey', antialias=True):
         # antialiased thick lines aren't supported by pygame, and the aaline function has some
@@ -353,7 +353,7 @@ class Image(Surface):
         return self.surface.get_buffer().length
 
 class GIFImage(Surface):
-    def __init__(self, image_file): #image_file can be either a file-like object or filename
+    def __init__(self, image_file): # image_file can be either a file-like object or filename
         pygame.init()
         from PIL import Image as PILImage
         self.frames = self._get_frames(PILImage.open(image_file))
@@ -375,7 +375,7 @@ class GIFImage(Surface):
                     pil_image.seek(0)
                 if pil_image.tile:
                     all_tiles.append(pil_image.tile[0][3][0])
-                pil_image.seek(pil_image.tell()+1)
+                pil_image.seek(pil_image.tell() + 1)
         except EOFError:
             pil_image.seek(0)
 
@@ -404,7 +404,7 @@ class GIFImage(Surface):
                     palette = base_palette
             else:
                 palette = base_palette
-            try: # account for different versions of Pillow
+            try:  # account for different versions of Pillow
                 pygame_image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
             except AttributeError:
                 pygame_image = pygame.image.fromstring(pil_image.tostring(), pil_image.size, pil_image.mode)
@@ -415,7 +415,7 @@ class GIFImage(Surface):
 
             result.append([pygame_image, duration])
             try:
-                pil_image.seek(pil_image.tell()+1)
+                pil_image.seek(pil_image.tell() + 1)
             except EOFError:
                 break
 

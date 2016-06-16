@@ -34,7 +34,7 @@ class RunLoop(object):
         self._wait_callbacks = CallbackList()
         self._before_action_callbacks = CallbackList()
         self._after_action_callbacks = CallbackList()
-        self.current_timers= []
+        self.current_timers = []
 
     def schedule(self, timer):
         if timer.next_fire_time is None:
@@ -48,16 +48,15 @@ class RunLoop(object):
         self.timers.append(timer)
         self.timers.sort(key=operator.attrgetter('next_fire_time'), reverse=True)
 
-    def remove_timer(self,action):
+    def remove_timer(self, action):
         """remove a timer from the list"""
         if self.current_timers:
             current_action = self.current_timers[-1].action
         else:
             current_action = None
-        if (action not in [x.action for x in self.timers] 
-            and action != current_action):
-                raise ValueError("Timer not found")
-        if current_action == action: #account for being called from the timer requesting being stopped
+        if action != current_action and action not in [x.action for x in self.timers]:
+            raise ValueError("Timer not found")
+        if current_action == action:  # account for being called from the timer requesting being stopped
             self.current_timers[-1].repeating = False
         self.timers[:] = [x for x in self.timers if x.action != action]
 
@@ -88,7 +87,7 @@ class RunLoop(object):
                     self._wait(start_time + 0.1)
                 except Exception as e:
                     self._error(e)
-        self.running = True #prevent an outer loop from stopping if inner loop has been stopped
+        self.running = True  # prevent an outer loop from stopping if inner loop has been stopped
 
     def stop(self):
         self.running = False

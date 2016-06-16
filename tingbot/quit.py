@@ -12,12 +12,8 @@ def fixup_sigterm_behaviour():
     We do this by calling the cleanup and exiting straight away on SIGTERM.
     '''
 
-    # this installs the 'bad' SIGTERM handler
-    pygame.display.init()
-
     def quit_handler(sig, frame):
         pygame.quit()
         sys.exit(128 + sig)
 
-    # this overwrites it with our SIGTERM handler
     signal.signal(signal.SIGTERM, quit_handler)

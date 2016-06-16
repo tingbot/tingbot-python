@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import platform
+
 try:
     from setuptools import setup
 except ImportError:
@@ -17,9 +19,12 @@ requirements = [
     'Pillow',
 ]
 
+if 'arm' in platform.machine():
+    requirements.append('wiringpi')
+
 setup(
-    name='tingbot',
-    version='0.3',
+    name='tingbot-python',
+    version='0.4.2',
     description="Python APIs to write apps for Tingbot",
     long_description=readme,
     author="Joe Rickerby",
@@ -33,6 +38,7 @@ setup(
                  'tbtool': 'tbtool'},
     include_package_data=True,
     install_requires=requirements,
+    obsoletes=['tingbot'],
     license="BSD",
     zip_safe=False,
     keywords='tingbot',

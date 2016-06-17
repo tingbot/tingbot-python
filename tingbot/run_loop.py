@@ -34,7 +34,6 @@ class RunLoop(object):
         self._wait_callbacks = CallbackList()
         self._before_action_callbacks = CallbackList()
         self._after_action_callbacks = CallbackList()
-        self.current_timers = []
 
     def schedule(self, timer):
         if timer.next_fire_time is None:
@@ -46,18 +45,13 @@ class RunLoop(object):
                 timer.next_fire_time = time.time() + timer.period
 
         self.timers.append(timer)
-        self.timers.sort(key=operator.attrgetter('next_fire_time'), reverse=True)
+        self._sort_timers()
 
     def remove_timer(self, action):
-        """remove a timer from the list"""
-        if self.current_timers:
-            current_action = self.current_timers[-1].action
-        else:
-            current_action = None
-        if action != current_action and action not in [x.action for x in self.timers]:
+        '''remove a timer from the run loop'''
+        if action not in [x.action for x in self.timers]:
             raise ValueError("Timer not found")
-        if current_action == action:  # account for being called from the timer requesting being stopped
-            self.current_timers[-1].repeating = False
+
         self.timers[:] = [x for x in self.timers if x.action != action]
 
     def run(self):
@@ -66,8 +60,7 @@ class RunLoop(object):
             start_time = time.time()
 
             if len(self.timers) > 0:
-                next_timer = self.timers.pop()
-                self.current_timers.append(next_timer)
+                next_timer = self.timers[0]
 
                 try:
                     self._wait(next_timer.next_fire_time)
@@ -79,9 +72,10 @@ class RunLoop(object):
                     self._error(e)
                 finally:
                     if next_timer.repeating:
-                        next_timer.next_fire_time = start_time + next_timer.period
-                        self.schedule(next_timer)
-                self.current_timers.pop()
+                        next_timer.next_fire_time += next_timer.period
+                        self._sort_timers()
+                    else:
+                        self.timers.remove(next_timer)
             else:
                 try:
                     self._wait(start_time + 0.1)
@@ -100,6 +94,13 @@ class RunLoop(object):
 
     def add_after_action_callback(self, callback):
         self._after_action_callbacks.add(callback)
+
+    def _sort_timers(self):
+        '''
+        Sorts the timers list so that the next time to fire is at the top of the list.
+        Should be called after timers are added, or next_fire_time is changed on any timer.
+        '''
+        self.timers.sort(key=operator.attrgetter('next_fire_time'))
 
     def _wait(self, until):
         self._wait_callbacks()

@@ -28,6 +28,11 @@ class once(object):
 
         return f
 
+
+class RunLoopExit(BaseException):
+    pass
+
+
 class RunLoop(object):
     def __init__(self):
         self.timers = []
@@ -54,37 +59,35 @@ class RunLoop(object):
 
         self.timers[:] = [x for x in self.timers if x.action != action]
 
-    def run(self):
-        self.running = True
-        while self.running:
-            start_time = time.time()
+    def run(self, until=lambda: True):
+        try:
+            while True:
+                if len(self.timers) > 0:
+                    next_timer = self.timers[0]
 
-            if len(self.timers) > 0:
-                next_timer = self.timers[0]
+                    try:
+                        self._wait(next_timer.next_fire_time)
 
-                try:
-                    self._wait(next_timer.next_fire_time)
+                        before_action_time = time.time()
 
-                    self._before_action_callbacks()
-                    next_timer.action()
-                    self._after_action_callbacks()
-                except Exception as e:
-                    self._error(e)
-                finally:
-                    if next_timer.repeating:
-                        next_timer.next_fire_time += next_timer.period
-                        self._sort_timers()
-                    else:
-                        self.timers.remove(next_timer)
-            else:
-                try:
-                    self._wait(start_time + 0.1)
-                except Exception as e:
-                    self._error(e)
-        self.running = True  # prevent an outer loop from stopping if inner loop has been stopped
-
-    def stop(self):
-        self.running = False
+                        self._before_action_callbacks()
+                        next_timer.action()
+                        self._after_action_callbacks()
+                    except Exception as e:
+                        self._error(e)
+                    finally:
+                        if next_timer.repeating:
+                            next_timer.next_fire_time = before_action_time + next_timer.period
+                            self._sort_timers()
+                        else:
+                            self.timers.remove(next_timer)
+                else:
+                    try:
+                        self._wait(time.time() + 0.1)
+                    except Exception as e:
+                        self._error(e)
+        except RunLoopExit:
+            pass
 
     def add_wait_callback(self, callback):
         self._wait_callbacks.add(callback)

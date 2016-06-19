@@ -67,9 +67,13 @@ class RunLoop(object):
 
                     try:
                         self._wait(next_timer.next_fire_time)
+                    except Exception as e:
+                        self._error(e)
+                        continue
 
-                        before_action_time = time.time()
+                    before_action_time = time.time()
 
+                    try:
                         self._before_action_callbacks()
                         next_timer.action()
                         self._after_action_callbacks()

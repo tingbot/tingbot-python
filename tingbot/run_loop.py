@@ -59,14 +59,14 @@ class RunLoop(object):
 
         self.timers[:] = [x for x in self.timers if x.action != action]
 
-    def run(self, until=lambda: True):
+    def run(self, until=lambda: False):
         try:
             while True:
                 if len(self.timers) > 0:
                     next_timer = self.timers[0]
 
                     try:
-                        self._wait(next_timer.next_fire_time)
+                        self._wait(next_timer.next_fire_time, until)
                     except Exception as e:
                         self._error(e)
                         continue
@@ -87,7 +87,7 @@ class RunLoop(object):
                             self.timers.remove(next_timer)
                 else:
                     try:
-                        self._wait(time.time() + 0.1)
+                        self._wait(time.time() + 0.1, until)
                     except Exception as e:
                         self._error(e)
         except RunLoopExit:
@@ -109,10 +109,12 @@ class RunLoop(object):
         '''
         self.timers.sort(key=operator.attrgetter('next_fire_time'))
 
-    def _wait(self, until):
+    def _wait(self, until_time, until_func):
         self._wait_callbacks()
 
-        while time.time() < until:
+        while time.time() < until_time:
+            if until_func() == True:
+                raise RunLoopExit
             time.sleep(0.001)
             self._wait_callbacks()
 

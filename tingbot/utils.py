@@ -14,6 +14,11 @@ class CallbackList(object):
 
     def add(self, callback):
         self._list.append(callback)
+        
+    def copy(self):
+        obj = CallbackList()
+        obj._list = self._list[:]
+        return obj
 
 
 # cached_property from werkzeug

@@ -3,40 +3,72 @@ from .utils import Struct, CallbackList
 from . import error
 
 class Timer(Struct):
-    pass
+    def __init__(self,**kwargs):
+        self.active = True
+        super(Timer,self).__init__(**kwargs)
 
+    def stop(self):
+        self.active = False
+        
+    def run(self):
+        if self.active:
+            self.action()
 
 class every(object):
-    def __init__(self, hours=0, minutes=0, seconds=0):
+    def __init__(self, hours=0, minutes=0, seconds=0, background=False):
         self.period = (hours * 60 + minutes) * 60 + seconds
+        self.background = background
 
     def __call__(self, f):
-        timer = Timer(name=f.__name__, action=f, period=self.period, repeating=True, next_fire_time=None)
-
-        main_run_loop.schedule(timer)
-
+        create_timer(action=f, period=self.period, repeating=True, background=self.background)
         return f
 
+def create_timer(action, hours=0, minutes=0, seconds=0, period=0, repeating=True, background=False):
+    if period==0:
+        period = (hours * 60 + minutes) * 60 + seconds        
+    timer = Timer(action=action, period=period, repeating=repeating, next_fire_time=None, background=background)
+    RunLoop.schedule(timer)
+    return timer
+    
+
 class once(object):
-    def __init__(self, hours=0, minutes=0, seconds=0):
+    def __init__(self, hours=0, minutes=0, seconds=0, background=False):
         self.period = (hours * 60 + minutes) * 60 + seconds
+        self.background = background
 
     def __call__(self, f):
-        timer = Timer(action=f, period=self.period, repeating=False, next_fire_time=None)
-
-        main_run_loop.schedule(timer)
-
+        create_timer(action=f, period=self.period, repeating=False, background=self.background)
         return f
 
 class RunLoop(object):
-    def __init__(self):
-        self.timers = []
-        self._wait_callbacks = CallbackList()
-        self._before_action_callbacks = CallbackList()
-        self._after_action_callbacks = CallbackList()
-        self.current_timers = []
+    stack = []
+    def __init__(self, parent=None):
+        if parent:
+            self.timers = [x for x in parent.timers if x.background]
+            self._wait_callbacks = parent._wait_callbacks.copy()
+            self._before_action_callbacks = parent._before_action_callbacks.copy()
+            self._after_action_callbacks = parent._after_action_callbacks.copy()
+        else:
+            self.timers = []
+            self._wait_callbacks = CallbackList()
+            self._before_action_callbacks = CallbackList()
+            self._after_action_callbacks = CallbackList()
+        self.stack.append(self)
 
-    def schedule(self, timer):
+    @classmethod
+    def spawn(cls):
+        if cls.stack:
+            run_loop = cls(cls.stack[-1])
+        else:
+            run_loop = cls()
+        return run_loop
+            
+
+    @classmethod
+    def schedule(cls,timer):
+        cls.stack[-1]._schedule(timer)
+        
+    def _schedule(self, timer):
         if timer.next_fire_time is None:
             if timer.repeating:
                 # if it's repeating, and it's never been called, call it now
@@ -48,18 +80,6 @@ class RunLoop(object):
         self.timers.append(timer)
         self.timers.sort(key=operator.attrgetter('next_fire_time'), reverse=True)
 
-    def remove_timer(self, action):
-        """remove a timer from the list"""
-        if self.current_timers:
-            current_action = self.current_timers[-1].action
-        else:
-            current_action = None
-        if action != current_action and action not in [x.action for x in self.timers]:
-            raise ValueError("Timer not found")
-        if current_action == action:  # account for being called from the timer requesting being stopped
-            self.current_timers[-1].repeating = False
-        self.timers[:] = [x for x in self.timers if x.action != action]
-
     def run(self):
         self.running = True
         while self.running:
@@ -67,30 +87,30 @@ class RunLoop(object):
 
             if len(self.timers) > 0:
                 next_timer = self.timers.pop()
-                self.current_timers.append(next_timer)
+                if next_timer.active:
+                    try:
+                        self._wait(next_timer.next_fire_time)
 
-                try:
-                    self._wait(next_timer.next_fire_time)
-
-                    self._before_action_callbacks()
-                    next_timer.action()
-                    self._after_action_callbacks()
-                except Exception as e:
-                    self._error(e)
-                finally:
-                    if next_timer.repeating:
-                        next_timer.next_fire_time = start_time + next_timer.period
-                        self.schedule(next_timer)
-                self.current_timers.pop()
+                        self._before_action_callbacks()
+                        next_timer.run()
+                        self._after_action_callbacks()
+                    except Exception as e:
+                        self._error(e)
+                    finally:
+                        if next_timer.repeating and next_timer.active:
+                            next_timer.next_fire_time = start_time + next_timer.period
+                            self._schedule(next_timer)
             else:
                 try:
                     self._wait(start_time + 0.1)
                 except Exception as e:
                     self._error(e)
         self.running = True  # prevent an outer loop from stopping if inner loop has been stopped
+        self.stack.pop()  # remove this run_loop from the stack  
 
-    def stop(self):
-        self.running = False
+    @classmethod
+    def stop(cls):
+        cls.stack[-1].running = False
 
     def add_wait_callback(self, callback):
         self._wait_callbacks.add(callback)

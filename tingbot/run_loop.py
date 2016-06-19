@@ -3,13 +3,13 @@ from .utils import Struct, CallbackList
 from . import error
 
 class Timer(Struct):
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         self.active = True
-        super(Timer,self).__init__(**kwargs)
+        super(Timer, self).__init__(**kwargs)
 
     def stop(self):
         self.active = False
-        
+
     def run(self):
         if self.active:
             self.action()
@@ -24,12 +24,12 @@ class every(object):
         return f
 
 def create_timer(action, hours=0, minutes=0, seconds=0, period=0, repeating=True, background=False):
-    if period==0:
-        period = (hours * 60 + minutes) * 60 + seconds        
+    if period == 0:
+        period = (hours * 60 + minutes) * 60 + seconds
     timer = Timer(action=action, period=period, repeating=repeating, next_fire_time=None, background=background)
     RunLoop.schedule(timer)
     return timer
-    
+
 
 class once(object):
     def __init__(self, hours=0, minutes=0, seconds=0, background=False):
@@ -41,7 +41,9 @@ class once(object):
         return f
 
 class RunLoop(object):
+
     stack = []
+
     def __init__(self, parent=None):
         if parent:
             self.timers = [x for x in parent.timers if x.background]
@@ -62,12 +64,11 @@ class RunLoop(object):
         else:
             run_loop = cls()
         return run_loop
-            
 
     @classmethod
-    def schedule(cls,timer):
+    def schedule(cls, timer):
         cls.stack[-1]._schedule(timer)
-        
+
     def _schedule(self, timer):
         if timer.next_fire_time is None:
             if timer.repeating:
@@ -106,7 +107,7 @@ class RunLoop(object):
                 except Exception as e:
                     self._error(e)
         self.running = True  # prevent an outer loop from stopping if inner loop has been stopped
-        self.stack.pop()  # remove this run_loop from the stack  
+        self.stack.pop()  # remove this run_loop from the stack
 
     @classmethod
     def stop(cls):

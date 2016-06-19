@@ -21,12 +21,12 @@ from . import platform_specific, input, quit
 from .graphics import screen, Surface, Image
 from .run_loop import main_run_loop, create_timer, every, once, RunLoop
 from .input import touch
-from .button import press,left_button,midleft_button,midright_button,right_button
+from .button import press, left_button, midleft_button, midright_button, right_button
 from .web import webhook
 from .tingapp import app
 
-#enable deprecation warnings
-warnings.filterwarnings("once",".*",DeprecationWarning)
+# enable deprecation warnings
+warnings.filterwarnings("once", ".*", DeprecationWarning)
 
 platform_specific.fixup_env()
 quit.fixup_sigterm_behaviour()

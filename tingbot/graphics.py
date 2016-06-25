@@ -217,7 +217,7 @@ class Surface(object):
 
             pygame.draw.polygon(self.surface, _color(color), points)
 
-    def image(self, image, xy=None, scale=1, align='center', raise_error=True):
+    def image(self, image, xy=None, scale=1, alpha=1.0, align='center', raise_error=True):
         if isinstance(image, basestring):
             try:
                 image = image_cache.get_image(image)
@@ -228,21 +228,38 @@ class Surface(object):
                     image = image_cache.get_image(broken_image_file)
 
         scale = _scale(scale)
-        image_size = image.size
 
-        surface = image.surface
+        if hasattr(image, 'surface'):
+            image_size = image.size
+            surface = image.surface
+        else:
+            # maybe the caller passed `image` as a pygame surface
+            surface = image
+            image_size = surface.get_size()
+
+        # blit_surface is a temporary variable to minimise copying on each tranformation
+        blit_surface = surface
 
         if scale != (1, 1):
             image_size = _xy_multiply(image_size, scale)
             image_size = tuple(int(d) for d in image_size)
             try:
-                surface = pygame.transform.smoothscale(surface, image_size)
+                blit_surface = pygame.transform.smoothscale(surface, image_size)
             except ValueError:
-                surface = pygame.transform.scale(surface, image_size)
+                blit_surface = pygame.transform.scale(surface, image_size)
+
+        if alpha < 1.0:
+            # only copy the surface if required
+            if blit_surface is surface:
+                blit_surface = surface.copy()
+
+            # multipling the pixels' color components with white does nothing, so this only
+            # changes the alpha of the image
+            blit_surface.fill((255, 255, 255, alpha*255), None, pygame.BLEND_RGBA_MULT)
 
         xy = _topleft_from_aligned_xy(xy, align, image_size, self.size)
 
-        self.surface.blit(surface, xy)
+        self.surface.blit(blit_surface, xy)
 
 
 class Screen(Surface):

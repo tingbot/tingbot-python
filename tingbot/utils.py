@@ -60,6 +60,23 @@ class cached_property(object):
         return value
 
 
+class only_call_once(object):
+    '''
+    A function decorator that only calls the wrapped function once. Subsequent calls do nothing.
+    '''
+    def __init__(self, func):
+        self.__name__ = func.__name__
+        self.__module__ = func.__module__
+        self.__doc__ = func.__doc__
+        self.func = func
+        self.has_run = False
+
+    def __call__(self):
+        if not self.has_run:
+            self.func()
+            self.has_run = True
+
+
 def call_with_optional_arguments(func, **kwargs):
     '''
     calls a function with the arguments **kwargs, but only those that the function defines.

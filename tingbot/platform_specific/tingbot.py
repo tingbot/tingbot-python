@@ -1,5 +1,5 @@
 import os
-
+from ..utils import only_call_once
 
 def fixup_env():
     import evdev
@@ -33,20 +33,18 @@ def register_button_callback(callback):
     ensure_button_setup()
     button_callback = callback
 
-button_setup_done = False
-
-def ensure_button_setup():
-    global button_setup_done
-    if not button_setup_done:
-        button_setup()
-    button_setup_done = True
-
 button_pins = (17, 23, 24, 18)
 
-def button_setup():
+@only_call_once
+def ensure_wiringpi_setup():
+    import wiringpi
+    wiringpi.wiringPiSetupGpio()
+
+@only_call_once
+def ensure_button_setup():
     import wiringpi
 
-    wiringpi.wiringPiSetupGpio()
+    ensure_wiringpi_setup()
 
     for button_pin in button_pins:
         wiringpi.pinMode(button_pin, wiringpi.INPUT)
@@ -65,3 +63,27 @@ def GPIO_callback():
             button_callback(button_index, 'down' if (new == 1) else 'up')
 
     button_previous_states = button_states
+
+@only_call_once
+def ensure_backlight_setup():
+    import subprocess
+    subprocess.check_call(['gpio', '-g', 'mode', '18', 'pwm'])
+    subprocess.check_call(['gpio', '-g', 'pwmr', '65536'])
+
+def set_backlight(brightness):
+    '''
+    Sets the backlight of the screen to `brightness`. `brightness` is a number from 0 to 100.
+    '''
+    import wiringpi
+
+    ensure_wiringpi_setup()
+    ensure_backlight_setup()
+
+    if brightness <= 4:
+        # linear scaling from 0 to 4
+        value = brightness
+    else:
+        # cubic scaling from 4 to 100
+        value = 65536 * (brightness/100.0)**3
+
+    wiringpi.pwmWrite(18, int(value))

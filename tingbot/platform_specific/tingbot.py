@@ -74,9 +74,8 @@ def set_backlight(brightness):
     '''
     Sets the backlight of the screen to `brightness`. `brightness` is a number from 0 to 100.
     '''
-    import wiringpi
+    import subprocess
 
-    ensure_wiringpi_setup()
     ensure_backlight_setup()
 
     if brightness <= 4:
@@ -86,4 +85,4 @@ def set_backlight(brightness):
         # cubic scaling from 4 to 100
         value = 65536 * (brightness/100.0)**3
 
-    wiringpi.pwmWrite(18, int(value))
+    subprocess.check_call(['gpio', '-g', 'pwm', '18', str(value)])

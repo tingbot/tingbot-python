@@ -267,6 +267,7 @@ class Screen(Surface):
         super(Screen, self).__init__()
         self.needs_update = False
         self.has_surface = False
+        self._brightness = 75
 
     def _create_surface(self):
         from . import platform_specific
@@ -301,6 +302,22 @@ class Screen(Surface):
     def update_if_needed(self):
         if self.needs_update:
             self.update()
+
+    @property
+    def brightness(self):
+        return self._brightness
+
+    @brightness.setter
+    def brightness(self, brightness):
+        from . import platform_specific
+
+        if brightness < 0:
+            brightness = 0
+        if brightness > 100:
+            brightness = 100
+
+        self._brightness = brightness
+        platform_specific.set_backlight(brightness)
 
 
 screen = Screen()

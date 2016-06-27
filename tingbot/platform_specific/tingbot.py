@@ -33,7 +33,7 @@ def register_button_callback(callback):
     ensure_button_setup()
     button_callback = callback
 
-button_pins = (17, 23, 24, 18)
+button_pins = (17, 23, 24, 14)
 
 @only_call_once
 def ensure_wiringpi_setup():

@@ -427,6 +427,8 @@ class GIFImage(Surface):
                 pygame_image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
             except AttributeError:
                 pygame_image = pygame.image.fromstring(pil_image.tostring(), pil_image.size, pil_image.mode)
+
+            screen.ensure_display_setup()
             pygame_image.set_palette(palette)
 
             if "transparency" in pil_image.info:

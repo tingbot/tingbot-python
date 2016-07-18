@@ -34,7 +34,7 @@ def get_max_age(response, last_modified):
     """return how many seconds from original access this response is valid for"""
     try:
         cache_control = response.headers['cache-control']
-        return int(re.match(r"max-age\W*=\W*(\d+)", cache_control).group[1])
+        return int(re.match(r"max-age\W*=\W*(\d+)", cache_control).group(1))
     except (KeyError, ValueError, AttributeError, TypeError):
         pass
     try:

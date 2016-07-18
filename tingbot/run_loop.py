@@ -1,6 +1,8 @@
 import sys, operator, time, traceback
 from .utils import Struct, CallbackList
 from . import error
+from .graphics import screen
+from .input import EventHandler
 
 class Timer(Struct):
     def __init__(self, **kwargs):
@@ -44,26 +46,23 @@ class RunLoop(object):
 
     stack = []
 
-    def __init__(self, parent=None):
-        if parent:
-            self.timers = [x for x in parent.timers if x.background]
-            self._wait_callbacks = parent._wait_callbacks.copy()
-            self._before_action_callbacks = parent._before_action_callbacks.copy()
-            self._after_action_callbacks = parent._after_action_callbacks.copy()
+    def __init__(self, event_handler=None):
+        self._wait_callbacks = CallbackList()
+        self._before_action_callbacks = CallbackList()
+        self._after_action_callbacks = CallbackList()
+        if self.stack:
+            self.timers = [x for x in self.stack[-1].timers if x.background]
         else:
             self.timers = []
-            self._wait_callbacks = CallbackList()
-            self._before_action_callbacks = CallbackList()
-            self._after_action_callbacks = CallbackList()
         self.stack.append(self)
 
-    @classmethod
-    def spawn(cls):
-        if cls.stack:
-            run_loop = cls(cls.stack[-1])
-        else:
-            run_loop = cls()
-        return run_loop
+        # add screen update callbacks
+        self.add_after_action_callback(screen.update_if_needed)
+
+        if event_handler:
+            self.add_wait_callback(event_handler.poll)
+            # in case screen updates happen in input.poll...
+            self.add_wait_callback(screen.update_if_needed)
 
     @classmethod
     def schedule(cls, timer):
@@ -138,4 +137,4 @@ class RunLoop(object):
         time.sleep(0.5)
 
 
-main_run_loop = RunLoop()
+main_run_loop = RunLoop(event_handler=EventHandler())

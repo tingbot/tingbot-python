@@ -1,7 +1,7 @@
 import time
 import threading
 import warnings
-from collections import namedtuple
+from collections import namedtuple, deque
 import Queue
 
 from .utils import CallbackList
@@ -18,8 +18,8 @@ class Button(object):
         self.last_event = None
         self.hold_time = 1.0
         self.last_hold_check_time = 0
-        self.callbacks = {x:CallbackList() for x in action_types}
-        self.actions = []
+        self.callbacks = {x: CallbackList() for x in action_types}
+        self.actions = deque()
 
     def process_events(self, time):
         while True:
@@ -61,9 +61,9 @@ class Button(object):
         self.actions.append(action)
 
     def run_callbacks(self):
-        for action in self.actions:
+        while self.actions:
+            action = self.actions.popleft()
             self.callbacks[action.type]()
-        self.actions = []
 
     def add_event(self, action, timestamp=None):
         if timestamp is None:
@@ -92,7 +92,7 @@ class Button(object):
 
 # create buttons
 button_names = ('left', 'midleft', 'midright', 'right')
-buttons = {x:Button() for x in button_names}
+buttons = {x: Button() for x in button_names}
 left_button, midleft_button, midright_button, right_button = [buttons[x] for x in button_names]
 
 

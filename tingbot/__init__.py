@@ -19,14 +19,14 @@ except ImportError:
 from . import platform_specific, input, quit
 
 from .graphics import screen, Surface, Image
-from .run_loop import main_run_loop, every, once
+from .run_loop import main_run_loop, create_timer, every, once, RunLoop
 from .input import touch
-from .button import press,left_button,midleft_button,midright_button,right_button
+from .button import press, left_button, midleft_button, midright_button, right_button
 from .web import webhook
 from .tingapp import app
 
-#enable deprecation warnings
-warnings.filterwarnings("once",".*",DeprecationWarning)
+# enable deprecation warnings
+warnings.filterwarnings("once", ".*", DeprecationWarning)
 
 platform_specific.fixup_env()
 quit.fixup_sigterm_behaviour()
@@ -35,16 +35,11 @@ def run(loop=None):
     if loop is not None:
         every(seconds=1.0/30)(loop)
 
-    main_run_loop.add_after_action_callback(screen.update_if_needed)
-
-    main_run_loop.add_wait_callback(input.poll)
-    # in case screen updates happen in input.poll...
-    main_run_loop.add_wait_callback(screen.update_if_needed)
-
     main_run_loop.run()
 
 __all__ = [
-    'run', 'screen', 'Surface', 'Image', 'every', 'touch', 'press', 'button', 'webhook',
+    'run', 'screen', 'Surface', 'Image', 'create_timer',
+    'every', 'once', 'RunLoop', 'touch', 'press', 'button', 'webhook',
     'left_button', 'midleft_button', 'midright_button', 'right_button',
 ]
 __author__ = 'Joe Rickerby'

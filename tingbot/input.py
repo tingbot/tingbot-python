@@ -8,35 +8,40 @@ mouse_down = False
 hit_areas = []
 active_hit_areas = []
 
-touch_handlers = []
-
 HitArea = namedtuple('HitArea', ('rect', 'callback'))
 
-def poll():
-    if not pygame.display.get_init():
-        return
-    for event in pygame.event.get():
-        #filter events if a touch handler is installed
-        if touch_handlers:
-            touch_handlers[-1](event)
-        else:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_down(pygame.mouse.get_pos())
+class EventHandler(object):
+    """call poll to handle touch events. Inherit from this class if you want
+    to create a new touch handler, eg for within a modal dialog box"""
 
-            elif event.type == pygame.MOUSEMOTION:
-                mouse_move(pygame.mouse.get_pos())
+    def poll(self):
+        if not pygame.display.get_init():
+            return
+        for event in pygame.event.get():
+            # filter events if a touch handler is installed
+            self.touch_handler(event)
+            if event.type == pygame.KEYDOWN:
+                command_down = (event.mod & 1024) or (event.mod & 2048)
 
-            elif event.type == pygame.MOUSEBUTTONUP:
-                mouse_up(pygame.mouse.get_pos())
+                if event.key == 113 and command_down:
+                    sys.exit()
 
-        if event.type == pygame.KEYDOWN:
-            command_down = (event.mod & 1024) or (event.mod & 2048)
-
-            if event.key == 113 and command_down:
+            elif event.type == pygame.QUIT:
                 sys.exit()
 
-        elif event.type == pygame.QUIT:
-            sys.exit()
+    def touch_handler(self, event):
+        handle_events(event)
+
+def handle_events(event):
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        mouse_down(pygame.mouse.get_pos())
+
+    elif event.type == pygame.MOUSEMOTION:
+        mouse_move(pygame.mouse.get_pos())
+
+    elif event.type == pygame.MOUSEBUTTONUP:
+        mouse_up(pygame.mouse.get_pos())
+
 
 def mouse_down(pos):
     for hit_area in hit_areas:
@@ -76,17 +81,3 @@ class touch(object):
 
         hit_areas.append(HitArea(self.rect, offset_callback))
         return f
-        
-def push_touch_handler(handler):
-    """set a handler to intercept all mouse/touch events. These calls can be nested
-    e.g.
-        push_touch_handler(handler1) # handler1 now gets all events
-        push_touch_handler(handler2) # handler2 now gets all events, handler 1 gets nothing
-        pop_touch_handler()       # handler1 now gets all events
-        pop_touch_handler()       # now events are handled normally
-    """
-    touch_handlers.append(handler)
-    
-def pop_touch_handler(handler):
-    """remove the current touch handler"""
-    touch_handlers.remove(handler)

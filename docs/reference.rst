@@ -335,3 +335,30 @@ Tingbot has an internal run loop that it uses to schedule events.
             r = requests.get('http://api.openweathermap.org/data/2.5/weather?q=London,uk&appid=bd82977b86bf27fb59a04b61b657fb6f')
             state['data'] = r.json()
 
+.. py:decorator:: once(hours=0, minutes=0, seconds=0)
+
+    This decorator will call the function marked once, according to the time specified.
+    
+    
+Hardware
+--------
+
+There are several useful functions that can be used to see if hardware is connected to the tingbot.
+
+.. py:function:: get_ip_address()
+
+    Returns the IP address of the tingbot or None if it is not connected
+    
+.. py:function:: mouse_attached()
+    
+    Returns True if a mouse is attached
+    
+.. py:function:: keyboard_attached()
+    
+    Returns True if a keyboard is attached
+    
+.. py:function:: joystick_attached()
+    
+    Returns True if a joystick is attached
+    
+

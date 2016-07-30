@@ -24,6 +24,7 @@ from .input import touch
 from .button import press, left_button, midleft_button, midright_button, right_button
 from .web import webhook
 from .tingapp import app
+from .hardware import get_ip_address, mouse_attached, keyboard_attached, joystick_attached
 
 # enable deprecation warnings
 warnings.filterwarnings("once", ".*", DeprecationWarning)
@@ -41,6 +42,7 @@ __all__ = [
     'run', 'screen', 'Surface', 'Image', 'create_timer',
     'every', 'once', 'RunLoop', 'touch', 'press', 'button', 'webhook',
     'left_button', 'midleft_button', 'midright_button', 'right_button',
+    'get_ip_address', 'mouse_attached', 'keyboard_attached', 'joystick_attached',
 ]
 __author__ = 'Joe Rickerby'
 __email__ = 'joerick@mac.com'

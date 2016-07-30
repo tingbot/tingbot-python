@@ -17,6 +17,7 @@ requirements = [
     'virtualenv',
     'requests',
     'Pillow',
+    'pyudev',
 ]
 
 if 'arm' in platform.machine():

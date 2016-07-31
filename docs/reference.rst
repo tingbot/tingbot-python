@@ -348,6 +348,11 @@ There are several useful functions that can be used to see if hardware is connec
 .. py:function:: get_ip_address()
 
     Returns the IP address of the tingbot or None if it is not connected
+
+.. py:function:: get_wifi_cell()
+
+    Returns the SSID of the current wifi cell. Returns an empty string if no
+    current wifi cell, and `None` if there is no wifi dongle
     
 .. py:function:: mouse_attached()
     

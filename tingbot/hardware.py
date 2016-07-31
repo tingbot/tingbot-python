@@ -1,5 +1,7 @@
-import pyudev
 import socket
+import subprocess
+import re
+import pyudev
 
 udev_context = pyudev.Context()
 
@@ -28,3 +30,20 @@ def get_ip_address():
     finally:
         s.close()
     return ip_addr
+
+def get_wifi_cell():
+    """
+    Returns the current wifi cell (if attached)
+    Returns "" if not currently attached
+    Returns None if no wifi adapter present
+    """
+    try:
+        iw_data = subprocess.check_output(['iwconfig', 'wlan0'])
+    except subprocess.CalledProcessError:
+        # wlan0 not found
+        return None
+    match = re.search(r'ESSID:"(.+)"', iw_data)
+    if match:
+        return match.group(1)
+    else:
+        return ""

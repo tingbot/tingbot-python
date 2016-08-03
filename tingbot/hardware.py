@@ -31,6 +31,24 @@ def get_ip_address():
         s.close()
     return ip_addr
 
+class WifiCell():
+    attribute_patterns = {
+        'ssid': r'ESSID:"(.+)"',
+        'link_quality': r'Link Quality\s*=\s*(-?\d+)',
+        'signal_level': r'Signal Level\s*=\s*(-?\d+)'
+        }
+
+    def __init__(self, data):
+        for attr, pattern in self.attribute_patterns.items():
+            match = re.search(pattern, data, flags=re.I)
+            if match:
+                if attr in ('ssid',):
+                    setattr(self, attr, match.group(1))
+                else:
+                    setattr(self, attr, int(match.group(1)))
+            else:
+                setattr(self, attr, None)
+
 def get_wifi_cell():
     """
     Returns the current wifi cell (if attached)
@@ -42,8 +60,4 @@ def get_wifi_cell():
     except subprocess.CalledProcessError:
         # wlan0 not found
         return None
-    match = re.search(r'ESSID:"(.+)"', iw_data)
-    if match:
-        return match.group(1)
-    else:
-        return ""
+    return WifiCell(iw_data)

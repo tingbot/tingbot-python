@@ -7,5 +7,5 @@ virtualenv:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install python-pygame
-install: "pip install -r requirements_dev.txt"
+install: "pip install -r requirements_dev.txt -r requirements.txt"
 script: python setup.py test

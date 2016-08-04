@@ -18,6 +18,7 @@ requirements = [
     'requests',
     'Pillow',
     'pyudev',
+    'paramiko>=2.0.0',
 ]
 
 if 'arm' in platform.machine():

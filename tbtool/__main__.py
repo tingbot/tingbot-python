@@ -1,49 +1,59 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import os, textwrap, uuid, datetime, getpass, shutil, filecmp
-import subprocess
+import os, textwrap, uuid, datetime, getpass, shutil, filecmp, subprocess
+import paramiko
 from .appdirs import AppDirs
 
 
-def tingbot_key_path():
-    dir_path = '/tmp/tide-key-%s/' % getpass.getuser()
-    tmp_path = os.path.join(dir_path, 'tingbot.key')
+class SSHSession(object):
+    def __init__(self, hostname):
+        self.client = paramiko.SSHClient()
+        self.client.set_missing_host_key_policy(paramiko.WarningPolicy())
+        key_path = os.path.join(os.path.dirname(__file__), 'tingbot.key')
+        self.client.connect(hostname, username='pi', key_filename=key_path)
 
-    if not os.path.exists(tmp_path):
-        if not os.path.exists(dir_path):
-            os.mkdir(os.path.dirname(tmp_path), 0700)
-        src_path = os.path.join(os.path.dirname(__file__), 'tingbot.key')
-        shutil.copyfile(src_path, tmp_path)
-        os.chmod(tmp_path, 0600)
+    def exec_command(self, command):
+        stdin, stdout, stderr = self.client.exec_command(command)
 
-    return tmp_path
+        output = stdout.read()
+        error_output = stderr.read()
+        code = stdout.channel.recv_exit_status()
 
+        if code != 0:
+            raise SSHSession.RemoteCommandError(code, output, error_output)
 
-def open_ssh_session(hostname):
-    control_path = '/tmp/tide-ssh-control-{uuid}-{t.hour}:{t.minute}'.format(
-        uuid=uuid.uuid1(),
-        t=datetime.datetime.now())
+    def put_dir(self, source, target):
+        sftp = self.client.open_sftp()
 
-    subprocess.check_call([
-        'ssh',
-        '-nNf4',
-        '-o', 'UserKnownHostsFile=/dev/null',
-        '-o', 'StrictHostKeyChecking=no',
-        '-i', tingbot_key_path(),
-        '-o', 'ControlMaster=yes',
-        '-o', 'ControlPath=%s' % control_path,
-        'pi@%s' % hostname])
+        try:
+            sftp.mkdir(target, 0755)
 
-    return control_path
+            for filename in os.listdir(source):
+                local_path = os.path.join(source, filename)
+                remote_path = '%s/%s' % (target, filename)
 
+                if os.path.islink(local_path):
+                    link_destination = os.readlink(local_path)
+                    sftp.symlink(remote_path, link_destination)
 
-def close_ssh_session(control_path):
-    subprocess.check_call([
-        'ssh',
-        '-o', 'ControlPath=%s' % control_path,
-        '-O', 'exit',
-        'hostname-not-required'])
+                elif os.path.isfile(local_path):
+                    sftp.put(local_path, remote_path)
+
+                elif os.path.isdir(local_path):
+                    sftp.mkdir(remote_path, 0755)
+                    self.put_dir(local_path, remote_path)
+        finally:
+            sftp.close()
+
+    def close(self):
+        self.client.close()
+
+    class RemoteCommandError(Exception):
+        def __init__(self, code, output, error_output):
+            self.code = code
+            self.output = output
+            self.error_output = error_output
 
 
 def _app_exec_info(app_path, python_exe='python'):
@@ -90,7 +100,7 @@ def simulate(app_path):
 def run(app_path, hostname):
     print 'Connecting to Pi...'
 
-    control_path = open_ssh_session(hostname)
+    session = SSHSession(hostname)
 
     try:
         app_name = os.path.basename(app_path)
@@ -100,34 +110,18 @@ def run(app_path, hostname):
 
         print 'Setting up Pi...'
 
-        subprocess.check_call([
-            'ssh',
-            '-o', 'ControlPath=%s' % control_path,
-            'pi@%s' % hostname,
-            'mkdir -p %s' % app_install_folder])
+        session.exec_command('rm -rf "%s"' % app_install_location)
+        session.exec_command('mkdir -p "%s"' % app_install_folder)
 
         print 'Copying app to %s...' % app_install_location
-
-        subprocess.check_call([
-            'rsync',
-            '--recursive',
-            '--perms',
-            '--links', '--safe-links',
-            '--delete',
-            '-e', 'ssh -o ControlPath=%s' % control_path,
-            app_path + '/',
-            'pi@%s:"%s"' % (hostname, app_install_location)])
+        session.exec_command('rm -rf "%s"' % app_install_location)
+        session.put_dir(app_path, app_install_location)
 
         print 'Starting app...'
 
-        subprocess.check_call([
-            'ssh',
-            '-o', 'ControlPath=%s' % control_path,
-            'pi@%s' % hostname,
-            'tbopen --follow "%s"' % app_install_location])
+        session.exec_command('tbopen "%s"' % app_install_location)
     finally:
-        close_ssh_session(control_path)
-
+        session.close()
 
 def install_deps(app_path):
     '''
@@ -195,30 +189,21 @@ def clean(app_path):
 
 
 def install(app_path, hostname):
-    control_path = open_ssh_session(hostname)
+    session = SSHSession(hostname)
 
     try:
         app_name = os.path.basename(app_path)
 
         app_install_location = '/apps/%s' % app_name
 
-        subprocess.check_call([
-            'rsync',
-            '--recursive',
-            '--perms',
-            '--links', '--safe-links',
-            '--delete',
-            '-e', 'ssh -o ControlPath=%s' % control_path,
-            app_path,
-            'pi@%s:%s' % (hostname, app_install_location)])
+        print 'Copying app to %s...' % app_install_location
+        session.exec_command('rm -rf "%s"' % app_install_location)
+        session.put_dir(app_path, app_install_location)
 
-        subprocess.check_call([
-            'ssh',
-            '-o', 'ControlPath=%s' % control_path,
-            'pi@%s' % hostname,
-            'tbopen /apps/home'])
+        print 'Restarting springboard...'
+        session.exec_command('tbopen /apps/home')
     finally:
-        close_ssh_session(control_path)
+        session.close()
 
 
 def tingbot_run(app_path):

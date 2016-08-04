@@ -1,11 +1,18 @@
 import socket
 import subprocess
 import re
-import pyudev
 
-udev_context = pyudev.Context()
+udev_context = None
+
+def ensure_udev_setup():
+    global udev_context
+    if udev_context is None:
+        import pyudev
+        udev_context = pyudev.Context()
 
 def count_peripherals(name):
+    ensure_udev_setup()
+
     args = {name: 1}
     devices = udev_context.list_devices(**args)
     unique_devices = set(x.properties['ID_PATH'] for x in devices)

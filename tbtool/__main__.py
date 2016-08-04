@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import os, textwrap, uuid, datetime, getpass, shutil, filecmp, subprocess
+import os, textwrap, shutil, filecmp, subprocess
 import paramiko
 from .appdirs import AppDirs
 
@@ -109,7 +109,6 @@ def run(app_path, hostname):
         app_install_folder = os.path.dirname(app_install_location)
 
         print 'Setting up Pi...'
-
         session.exec_command('rm -rf "%s"' % app_install_location)
         session.exec_command('mkdir -p "%s"' % app_install_folder)
 
@@ -118,7 +117,6 @@ def run(app_path, hostname):
         session.put_dir(app_path, app_install_location)
 
         print 'Starting app...'
-
         session.exec_command('tbopen "%s"' % app_install_location)
     finally:
         session.close()

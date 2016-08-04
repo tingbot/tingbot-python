@@ -9,7 +9,7 @@ from .appdirs import AppDirs
 class SSHSession(object):
     def __init__(self, hostname):
         self.client = paramiko.SSHClient()
-        self.client.set_missing_host_key_policy(paramiko.WarningPolicy())
+        self.client.set_missing_host_key_policy(SSHSession.IgnoreHostKeyPolicy())
         key_path = os.path.join(os.path.dirname(__file__), 'tingbot.key')
         self.client.connect(hostname, username='pi', key_filename=key_path)
 
@@ -48,6 +48,10 @@ class SSHSession(object):
 
     def close(self):
         self.client.close()
+
+    class IgnoreHostKeyPolicy(object):
+        def missing_host_key(self, client, hostname, key):
+            return
 
     class RemoteCommandError(Exception):
         def __init__(self, code, output, error_output):
@@ -200,6 +204,8 @@ def install(app_path, hostname):
 
         print 'Restarting springboard...'
         session.exec_command('tbopen /apps/home')
+
+        print 'App installed.'
     finally:
         session.close()
 

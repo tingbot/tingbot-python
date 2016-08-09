@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import os, textwrap, shutil, filecmp, subprocess
+import os, textwrap, shutil, filecmp, subprocess, sys
 import paramiko
 from .appdirs import AppDirs
 
@@ -79,6 +79,20 @@ def _app_exec_info(app_path, python_exe='python'):
 
     return (None, None)
 
+def _exec(args, env):
+    if sys.platform != 'win32':
+        os.execvpe(args[0], args, env)
+    else:
+        # 'exec' on Windows doesn't have the same semantics - on Windows the calling process
+        # returns as if it had exited. Here we simulate *nix 'exec' behaviour.
+
+        # Ignore CTRL-C events as they're handled by the subprocess
+        import signal
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+        process = subprocess.Popen(args, env=env)
+        process.wait()
+        sys.exit(process.returncode)
 
 def _run(app_path, extra_env=None):
     python_exe = install_deps(app_path)
@@ -94,8 +108,7 @@ def _run(app_path, extra_env=None):
         env.update(extra_env)
 
     os.chdir(working_directory)
-    os.execvpe(args[0], args, env)
-
+    _exec(args, env)
 
 def simulate(app_path):
     _run(app_path)

@@ -247,16 +247,21 @@ def main():
                                     instead.
         '''))
 
+    if not os.path.exists(args['<app>']):
+        raise Exception("%s: no such file or directory" % args['<app>'])
+
+    app_path = os.path.abspath(args['<app>'])
+
     if args['simulate']:
-        return simulate(args['<app>'])
+        return simulate(app_path)
     elif args['clean']:
-        return clean(args['<app>'])
+        return clean(app_path)
     elif args['run']:
-        return run(args['<app>'], args['<hostname>'])
+        return run(app_path, args['<hostname>'])
     elif args['install']:
-        return install(args['<app>'], args['<hostname>'])
+        return install(app_path, args['<hostname>'])
     elif args['tingbot_run']:
-        return tingbot_run(args['<app>'])
+        return tingbot_run(app_path)
 
 if __name__ == '__main__':
     main()

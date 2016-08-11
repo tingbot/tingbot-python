@@ -21,7 +21,7 @@ class SSHSession(object):
         code = stdout.channel.recv_exit_status()
 
         if code != 0:
-            raise SSHSession.RemoteCommandError(code, output, error_output)
+            raise SSHSession.RemoteCommandError(command, code, output, error_output)
 
     def put_dir(self, source, target):
         sftp = self.client.open_sftp()
@@ -54,10 +54,14 @@ class SSHSession(object):
             return
 
     class RemoteCommandError(Exception):
-        def __init__(self, code, output, error_output):
+        def __init__(self, command, code, output, error_output):
+            self.command = command
             self.code = code
             self.output = output
             self.error_output = error_output
+            message = 'Remote command %s failed with code %i. \n%s\n%s' % (
+                command, code, output, error_output)
+            super(SSHSession.RemoteCommandError, self).__init__(message)
 
 
 def _app_exec_info(app_path, python_exe='python'):
@@ -229,12 +233,16 @@ def tingbot_run(app_path):
 
 def main():
     args = docopt(textwrap.dedent('''
-        Usage: tbtool simulate <app>
-               tbtool clean <app>
-               tbtool run <app> <hostname>
-               tbtool install <app> <hostname>
-               tbtool tingbot_run <app>
-               tbtool -h|--help
+        Usage: 
+          tbtool [-v] simulate <app>
+          tbtool [-v] clean <app>
+          tbtool [-v] run <app> <hostname>
+          tbtool [-v] install <app> <hostname>
+          tbtool [-v] tingbot_run <app>
+          tbtool -h|--help
+
+        Options:
+          -v, --verbose             Output more information when errors occur
 
         Commands:
           simulate <app>            Runs the app in the simulator
@@ -247,21 +255,34 @@ def main():
                                     instead.
         '''))
 
-    if not os.path.exists(args['<app>']):
-        raise Exception("%s: no such file or directory" % args['<app>'])
+    try:
+        if not os.path.exists(args['<app>']):
+            raise Exception("%s: no such file or directory" % args['<app>'])
 
-    app_path = os.path.abspath(args['<app>'])
+        app_path = os.path.abspath(args['<app>'])
 
-    if args['simulate']:
-        return simulate(app_path)
-    elif args['clean']:
-        return clean(app_path)
-    elif args['run']:
-        return run(app_path, args['<hostname>'])
-    elif args['install']:
-        return install(app_path, args['<hostname>'])
-    elif args['tingbot_run']:
-        return tingbot_run(app_path)
+        if args['simulate']:
+            return simulate(app_path)
+        elif args['clean']:
+            return clean(app_path)
+        elif args['run']:
+            return run(app_path, args['<hostname>'])
+        elif args['install']:
+            return install(app_path, args['<hostname>'])
+        elif args['tingbot_run']:
+            return tingbot_run(app_path)
+    except Exception as e:
+        for arg in e.args:
+            if isinstance(arg, int) and arg == e.args[0]:
+                sys.stderr.write('tbtool: %s error %i\n' % (e.__class__.__name__, arg))
+            else:
+                for line in str(arg).splitlines():
+                    sys.stderr.write('tbtool: %s\n' % line)
+        if args['--verbose']:
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+    except KeyboardInterrupt:
+        pass
 
 if __name__ == '__main__':
     main()

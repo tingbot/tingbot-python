@@ -119,7 +119,7 @@ def simulate(app_path):
 
 
 def run(app_path, hostname):
-    print 'Connecting to Pi...'
+    print 'tbtool: Connecting to Pi...'
 
     session = SSHSession(hostname)
 
@@ -129,15 +129,15 @@ def run(app_path, hostname):
         app_install_location = '/tmp/tide/%s' % app_name
         app_install_folder = os.path.dirname(app_install_location)
 
-        print 'Setting up Pi...'
+        print 'tbtool: Setting up Pi...'
         session.exec_command('rm -rf "%s"' % app_install_location)
         session.exec_command('mkdir -p "%s"' % app_install_folder)
 
-        print 'Copying app to %s...' % app_install_location
+        print 'tbtool: Copying app to %s...' % app_install_location
         session.exec_command('rm -rf "%s"' % app_install_location)
         session.put_dir(app_path, app_install_location)
 
-        print 'Starting app...'
+        print 'tbtool: Starting app...'
         session.exec_command('tbopen "%s"' % app_install_location)
     finally:
         session.close()
@@ -174,6 +174,7 @@ def build(app_path):
     except (OSError, subprocess.CalledProcessError):
         # we've got to build the virtualenv
         clean(app_path)
+        print 'tbtool: Creating virtualenv...'
         virtualenv.create_environment(venv_path, site_packages=True,)
 
         # ignore the virtualenv when the app is tracked with git
@@ -196,6 +197,7 @@ def build(app_path):
     )
 
     if not requirements_unchanged_since_last_run:
+        print 'tbtool: Installing dependencies into virtualenv...'
         venv_pip_path = os.path.join(venv_bin_dir, 'pip')
 
         env = os.environ.copy()
@@ -229,14 +231,14 @@ def install(app_path, hostname):
 
         app_install_location = '/apps/%s' % app_name
 
-        print 'Copying app to %s...' % app_install_location
+        print 'tbtool: Copying app to %s...' % app_install_location
         session.exec_command('rm -rf "%s"' % app_install_location)
         session.put_dir(app_path, app_install_location)
 
-        print 'Restarting springboard...'
+        print 'tbtool: Restarting springboard...'
         session.exec_command('tbopen /apps/home')
 
-        print 'App installed.'
+        print 'tbtool: App installed.'
     finally:
         session.close()
 

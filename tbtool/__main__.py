@@ -99,7 +99,7 @@ def _exec(args, env):
         sys.exit(process.returncode)
 
 def _run(app_path, extra_env=None):
-    python_exe = install_deps(app_path)
+    python_exe = build(app_path)
 
     args, working_directory = _app_exec_info(app_path, python_exe=python_exe)
 
@@ -142,7 +142,7 @@ def run(app_path, hostname):
     finally:
         session.close()
 
-def install_deps(app_path):
+def build(app_path):
     '''
     Installs the dependencies in requirements.txt into a virtualenv in the app directory
     Returns the path to the python executable that should be used to run the app.
@@ -235,9 +235,10 @@ def main():
     args = docopt(textwrap.dedent('''
         Usage: 
           tbtool [-v] simulate <app>
-          tbtool [-v] clean <app>
           tbtool [-v] run <app> <hostname>
           tbtool [-v] install <app> <hostname>
+          tbtool [-v] build <app>
+          tbtool [-v] clean <app>
           tbtool [-v] tingbot_run <app>
           tbtool -h|--help
 
@@ -246,10 +247,14 @@ def main():
 
         Commands:
           simulate <app>            Runs the app in the simulator
-          clean <app>               Removes temporary files in the app
           run <app> <hostname>      Runs the app on the Tingbot specified by hostname
           install <app> <hostname>  Installs the app on the Tingbot specified by
                                     hostname
+          build <app>               If the app contains a requirements.txt file, creates
+                                    a virtualenv with those packages installed. Not
+                                    usually required to be called directly, building is
+                                    automatic when using 'simulate', 'run' and 'install'.
+          clean <app>               Removes temporary files in the app
           tingbot_run <app>         Used by tbprocessd to run Tingbot apps on the
                                     Tingbot itself. Users should probably use `tbopen'
                                     instead.
@@ -263,12 +268,14 @@ def main():
 
         if args['simulate']:
             return simulate(app_path)
-        elif args['clean']:
-            return clean(app_path)
         elif args['run']:
             return run(app_path, args['<hostname>'])
         elif args['install']:
             return install(app_path, args['<hostname>'])
+        elif args['build']:
+            return build(app_path)
+        elif args['clean']:
+            return clean(app_path)
         elif args['tingbot_run']:
             return tingbot_run(app_path)
     except Exception as e:

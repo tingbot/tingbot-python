@@ -235,6 +235,9 @@ def install(app_path, hostname):
         session.exec_command('rm -rf "%s"' % app_install_location)
         session.put_dir(app_path, app_install_location)
 
+        print 'tbtool: Preparing app...'
+        session.exec_command('tbtool build "%s"' % app_install_location)
+
         print 'tbtool: Restarting springboard...'
         session.exec_command('tbopen /apps/home')
 

@@ -129,7 +129,6 @@ def run(app_path, hostname):
         app_install_folder = os.path.dirname(app_install_location)
 
         print 'tbtool: Setting up Pi...'
-        session.exec_command('rm -rf "%s"' % app_install_location)
         session.exec_command('mkdir -p "%s"' % app_install_folder)
 
         print 'tbtool: Copying app to %s...' % app_install_location

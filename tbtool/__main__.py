@@ -41,7 +41,6 @@ class SSHSession(object):
                     sftp.put(local_path, remote_path)
 
                 elif os.path.isdir(local_path):
-                    sftp.mkdir(remote_path, 0755)
                     self.put_dir(local_path, remote_path)
         finally:
             sftp.close()

@@ -134,7 +134,7 @@ def run(app_path, hostname):
         session.exec_command('mkdir -p "%s"' % app_install_folder)
 
         print 'tbtool: Copying app to %s...' % app_install_location
-        session.exec_command('rm -rf "%s"' % app_install_location)
+        session.exec_command('sudo rm -rf "%s"' % app_install_location)
         session.put_dir(app_path, app_install_location)
 
         print 'tbtool: Starting app...'
@@ -232,7 +232,7 @@ def install(app_path, hostname):
         app_install_location = '/apps/%s' % app_name
 
         print 'tbtool: Copying app to %s...' % app_install_location
-        session.exec_command('rm -rf "%s"' % app_install_location)
+        session.exec_command('sudo rm -rf "%s"' % app_install_location)
         session.put_dir(app_path, app_install_location)
 
         print 'tbtool: Preparing app...'

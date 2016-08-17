@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import os, textwrap, shutil, filecmp, subprocess, sys
+import os, textwrap, shutil, filecmp, subprocess, sys, logging
 import paramiko
 from .appdirs import AppDirs
 
@@ -278,6 +278,11 @@ def main():
                                     Tingbot itself. Users should probably use `tbopen'
                                     instead.
         '''))
+
+    if args['--verbose']:
+        logging.basicConfig(level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.CRITICAL+1)
 
     try:
         if not os.path.exists(args['<app>']):

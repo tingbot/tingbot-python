@@ -1,4 +1,4 @@
-import os
+import os, subprocess, re
 from ..utils import only_call_once
 
 def fixup_env():
@@ -25,6 +25,10 @@ def create_main_surface():
     import pygame.mouse
     pygame.mouse.set_visible(0)
     return surface
+
+###########
+# Buttons #
+###########
 
 button_callback = None
 
@@ -64,9 +68,12 @@ def GPIO_callback():
 
     button_previous_states = button_states
 
+#############
+# Backlight #
+#############
+
 @only_call_once
 def ensure_backlight_setup():
-    import subprocess
     subprocess.check_call(['gpio', '-g', 'mode', '18', 'pwm'])
     subprocess.check_call(['gpio', '-g', 'pwmr', '65536'])
 
@@ -74,8 +81,6 @@ def set_backlight(brightness):
     '''
     Sets the backlight of the screen to `brightness`. `brightness` is a number from 0 to 100.
     '''
-    import subprocess
-
     ensure_backlight_setup()
 
     if brightness <= 4:
@@ -86,3 +91,67 @@ def set_backlight(brightness):
         value = 65536 * (brightness/100.0)**3
 
     subprocess.check_call(['gpio', '-g', 'pwm', '18', str(value)])
+
+###############
+# Peripherals #
+###############
+
+udev_context = None
+
+def ensure_udev_setup():
+    global udev_context
+    if udev_context is None:
+        import pyudev
+        udev_context = pyudev.Context()
+
+def count_peripherals(name):
+    ensure_udev_setup()
+
+    args = {name: 1}
+    devices = udev_context.list_devices(**args)
+    unique_devices = set(x.properties['ID_PATH'] for x in devices)
+    return len(unique_devices)
+
+def mouse_attached():
+    return count_peripherals('ID_INPUT_MOUSE') > 0
+
+def keyboard_attached():
+    return count_peripherals('ID_INPUT_KEYBOARD') > 0
+
+def joystick_attached():
+    return count_peripherals('ID_INPUT_JOYSTICK') > 0
+
+###########
+# Network #
+###########
+
+class WifiCell():
+    attribute_patterns = {
+        'ssid': r'ESSID:"(.+)"',
+        'link_quality': r'Link Quality\s*=\s*(-?\d+)',
+        'signal_level': r'Signal Level\s*=\s*(-?\d+)'
+        }
+
+    def __init__(self, data):
+        for attr, pattern in self.attribute_patterns.items():
+            match = re.search(pattern, data, flags=re.I)
+            if match:
+                if attr in ('ssid',):
+                    setattr(self, attr, match.group(1))
+                else:
+                    setattr(self, attr, int(match.group(1)))
+            else:
+                setattr(self, attr, None)
+
+def get_wifi_cell():
+    """
+    Returns the current wifi cell (if attached)
+    Returns "" if not currently attached
+    Returns None if no wifi adapter present
+    """
+    try:
+        iw_data = subprocess.check_output(['iwconfig', 'wlan0'])
+    except subprocess.CalledProcessError:
+        # wlan0 not found
+        return None
+    return WifiCell(iw_data)

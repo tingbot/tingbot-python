@@ -1,6 +1,6 @@
 import platform, os
 
-def is_tingbot():
+def is_running_on_tingbot():
     """
     Return True if running as a tingbot.
     """
@@ -10,12 +10,23 @@ def is_tingbot():
 def no_op(*args, **kwargs):
     pass
 
+def no_op_returning(return_value):
+    def inner(*args, **kwargs):
+        return return_value
+    return inner
+
+# set fallback functions (some of these will be replaced by the real versions below)
+set_backlight = no_op
+mouse_attached = no_op_returning(True)
+keyboard_attached = no_op_returning(True)
+joystick_attached = no_op_returning(False)
+get_wifi_cell = no_op_returning(None)
 
 if platform.system() == 'Darwin':
     from osx import fixup_env, create_main_surface, register_button_callback
-    set_backlight = no_op
-elif is_tingbot():
-    from tingbot import fixup_env, create_main_surface, register_button_callback, set_backlight
+elif is_running_on_tingbot():
+    from tingbot import (fixup_env, create_main_surface, register_button_callback,
+                         set_backlight, mouse_attached, keyboard_attached, joystick_attached,
+                         get_wifi_cell)
 else:
     from sdl_wrapper import fixup_env, create_main_surface, register_button_callback
-    set_backlight = no_op

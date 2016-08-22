@@ -289,17 +289,23 @@ def main():
         app_path = os.path.abspath(args['<app>'])
 
         if args['simulate']:
-            return simulate(app_path)
+            simulate(app_path)
+
         elif args['run']:
-            return run(app_path, args['<hostname>'])
+            run(app_path, args['<hostname>'])
+
         elif args['install']:
-            return install(app_path, args['<hostname>'])
+            install(app_path, args['<hostname>'])
+
         elif args['build']:
-            return build(app_path)
+            build(app_path)
+
         elif args['clean']:
-            return clean(app_path)
+            clean(app_path)
+
         elif args['tingbot_run']:
-            return tingbot_run(app_path)
+            tingbot_run(app_path)
+
     except Exception as e:
         for arg in e.args:
             if isinstance(arg, int) and arg == e.args[0]:

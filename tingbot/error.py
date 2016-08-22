@@ -80,7 +80,7 @@ def get_app_frame(traceback):
 
         filename = frame.f_code.co_filename
 
-        is_library_code = '/lib/' in filename or '/tingbot/' in filename or '/site-packages/' in filename
+        is_library_code = '/lib/' in filename or '-packages/' in filename
 
         if not is_library_code:
             return frame

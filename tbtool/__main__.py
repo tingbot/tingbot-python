@@ -153,7 +153,7 @@ def build(app_path):
 
     requirements_txt_path = os.path.join(app_path, 'requirements.txt')
     venv_path = os.path.join(app_path, 'venv')
-    venv_bin_dir = virtualenv.path_locations(venv_path)[3]
+    _, venv_lib_dir, _, venv_bin_dir = virtualenv.path_locations(venv_path)
     venv_python_path = os.path.join(venv_bin_dir, 'python')
     venv_previous_requirements_path = os.path.join(venv_path, 'requirements.txt')
 
@@ -188,6 +188,14 @@ def build(app_path):
 
                 *
                 '''))
+
+    # if PYTHONPATH is defined (this is how Tide bundles packages on Mac and Linux),
+    # the packages there have precidence over the packages in this virtualenv. That
+    # prevents the user upgrading anything that's bundled, so we'll add the virtualenv's
+    # packages in front of the existing PYTHONPATH.
+    if 'PYTHONPATH' in os.environ:
+        venv_site_packages = os.path.join(venv_lib_dir, 'site-packages')
+        os.environ['PYTHONPATH'] = venv_site_packages + ':' + os.environ['PYTHONPATH']
 
     requirements_unchanged_since_last_run = (
         os.path.isfile(venv_previous_requirements_path)

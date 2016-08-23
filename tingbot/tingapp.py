@@ -25,7 +25,23 @@ def save_json(path, filename, obj):
 
 
 class SettingsDict(collections.MutableMapping):
+    '''
+    Represents the tingapp.settings dict-like object.
 
+    The settings are loaded from three files in the app bundle
+
+      - default_settings.json 
+          This file contains default settings as defined by the app creator
+      - settings.json
+          This file contains settings as set by a user when installing the app
+          (via Tide, for example)
+      - local_settings.json
+          This file contains settings written by the app itself.
+
+    Settings can be overridden by later files.
+
+    Changes are always saved to the local_settings.json file.
+    '''
     def __init__(self, path):
         #note we do NOT initialise self.dct or self.local_settings here - this ensures we
         #raise an error in the event that they are accessed before self.load

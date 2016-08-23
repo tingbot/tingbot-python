@@ -410,7 +410,7 @@ class Image(Surface):
 
     def __init__(self, surface=None, size=None):
         pygame.init()
-        surface = surface or pygame.Surface(size)
+        surface = surface or pygame.Surface(size, flags=pygame.SRCALPHA)
         super(Image, self).__init__(surface)
 
     def get_memory_usage(self):

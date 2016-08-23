@@ -28,7 +28,7 @@ class SettingsDict(collections.MutableMapping):
 
     The settings are loaded from three files in the app bundle
 
-      - default_settings.json 
+      - default_settings.json
           This file contains default settings as defined by the app creator
       - settings.json
           This file contains settings as set by a user when installing the app
@@ -45,34 +45,34 @@ class SettingsDict(collections.MutableMapping):
         #raise an error in the event that they are accessed before self.load
         self.loaded = False
         self.path = path
-    
+
     def __contains__(self, item):
         if not self.loaded:
             self.load()
         return item in self.dct
-        
+
     def __len__(self):
         if not self.loaded:
             self.load()
         return len(self.dct)
-        
+
     def __getitem__(self, key):
         if not self.loaded:
             self.load()
         return self.dct[key]
-     
+
     def __setitem__(self, key, value):
         if not self.loaded:
             self.load()
         self.dct[key] = value
         self.local_settings[key] = value
         self.save()
-        
+
     def __delitem__(self, key):
         if not self.loaded:
             self.load()
         del self.local_settings[key]
-        
+
     def __iter__(self):
         if not self.loaded:
             self.load()

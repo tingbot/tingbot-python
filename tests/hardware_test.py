@@ -2,7 +2,8 @@ import unittest
 import subprocess
 import json
 
-import tingbot.hardware as hardware
+# hardware function implementations are in the platform_specific module
+import tingbot.platform_specific.tingbot as hardware
 
 class FakeDevice(object):
     def __init__(self, items):

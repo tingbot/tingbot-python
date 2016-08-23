@@ -82,14 +82,14 @@ Screen
         screen.rectangle(xy=(160,120), size=(100,100), color=(255,0,0), align='center')
 
 
-.. py:function:: screen.image(filename…, xy=…, scale=…, align=…, raise_error=True)
+.. py:function:: screen.image(filename…, xy=…, scale=…, align=…, max_width=…, max_height=…, raise_error=True)
 
     Draws an image with name filename at position xy. If filename is a URL (e.g. http://example.com/cats.png) then
     it will attempt to download this and display it.
 
     Images can be animated GIFs. Make sure to draw them in a loop() function to see them animate.
 
-    Scale is a number that changes the size of the image e.g. scale=2 makes the image bigger, scale=0.5 makes the image smaller.
+    Scale is a number that changes the size of the image e.g. scale=2 makes the image bigger, scale=0.5 makes the image smaller. There are also special values 'fit' and 'fill', which will fit or fill the image according to ``max_width`` and ``max_height``.
 
     Align is one of 
 

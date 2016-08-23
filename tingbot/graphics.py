@@ -1,4 +1,5 @@
 # coding: utf8
+from __future__ import division
 import os, time, numbers, math, io, warnings, sys
 import pygame
 import requests
@@ -147,6 +148,14 @@ class Surface(object):
     def size(self):
         return self.surface.get_size()
 
+    @property
+    def width(self):
+        return self.size[0]
+
+    @property
+    def height(self):
+        return self.size[1]
+
     def _fill(self, color, rect=None):
         if len(color) <= 3:
             self.surface.fill(color, rect)
@@ -176,7 +185,7 @@ class Surface(object):
             max_height=max_height,
             align=_anchor(align)[0])
 
-        self.image(text_image, xy, align=align)
+        self.image(text_image, xy=xy, align=align, scale=1)
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
         if len(size) != 2:
@@ -215,7 +224,7 @@ class Surface(object):
 
             pygame.draw.polygon(self.surface, _color(color), points)
 
-    def image(self, image, xy=None, scale=1, alpha=1.0, align='center', raise_error=True):
+    def image(self, image, xy=None, scale='shrinkToFit', alpha=1.0, align='center', max_width=sys.maxsize, max_height=sys.maxsize, raise_error=True):
         if isinstance(image, basestring):
             try:
                 image = image_cache.get_image(image)
@@ -225,8 +234,6 @@ class Surface(object):
                 else:
                     image = image_cache.get_image(broken_image_file)
 
-        scale = _scale(scale)
-
         if hasattr(image, 'surface'):
             image_size = image.size
             surface = image.surface
@@ -234,6 +241,27 @@ class Surface(object):
             # maybe the caller passed `image` as a pygame surface
             surface = image
             image_size = surface.get_size()
+
+        if scale in ('fit', 'fill', 'shrinkToFit'):
+            if max_width == sys.maxsize:
+                max_width = self.width
+            if max_height == sys.maxsize:
+                max_height = self.height
+
+            fit_scale = min(max_width / image_size[0], max_height / image_size[1])
+            fill_scale = max(max_width / image_size[0], max_height / image_size[1])
+
+            if scale == 'shrinkToFit':
+                if fit_scale < 1:
+                    scale = fit_scale
+                else:
+                    scale = 1
+            elif scale == 'fit':
+                scale = fit_scale
+            elif scale == 'fill':
+                scale = fill_scale
+
+        scale = _scale(scale)
 
         # blit_surface is a temporary variable to minimise copying on each tranformation
         blit_surface = surface
@@ -372,7 +400,7 @@ class Image(Surface):
 
         if max_height != sys.maxsize:
             line_height = font.get_linesize()
-            max_lines = min(max_lines, int(max_height/line_height))
+            max_lines = min(max_lines, int(max_height//line_height))
 
         surface = render_text(string, font, antialias, color, max_lines, max_width, ellipsis=u'…', align=align)
 

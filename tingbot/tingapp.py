@@ -71,7 +71,7 @@ class SettingsDict(collections.MutableMapping):
     def __delitem__(self, key):
         if not self.loaded:
             self.load()
-        del self.dct[key]
+        del self.local_settings[key]
         
     def __iter__(self):
         if not self.loaded:

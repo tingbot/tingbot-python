@@ -26,7 +26,7 @@ if 'arm' in platform.machine():
 
 setup(
     name='tingbot-python',
-    version='0.7.4',
+    version='0.8.0',
     description="Python APIs to write apps for Tingbot",
     long_description=readme,
     author="Joe Rickerby",

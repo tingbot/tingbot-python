@@ -147,8 +147,12 @@ def render_text(string, font, antialias, color, max_lines, max_width, ellipsis=u
     for line in lines:
         line_surfaces.append(font.render(line.string, antialias, color))
 
-    width = max(s.get_width() for s in line_surfaces)
-    height = sum(s.get_height() for s in line_surfaces)
+    if len(line_surfaces) > 0:
+        width = max(s.get_width() for s in line_surfaces)
+        height = sum(s.get_height() for s in line_surfaces)
+    else:
+        width = 0
+        height = 0
 
     surface = pygame.Surface((width, height), flags=pygame.SRCALPHA)
 

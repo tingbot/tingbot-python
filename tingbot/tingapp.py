@@ -4,8 +4,7 @@ import os
 import sys
 
 
-def load_json(path, filename):
-    filename = os.path.join(path, filename)
+def load_json(filename):
     try:
         with open(filename, 'r') as fp:
             result = json.load(fp)
@@ -18,8 +17,7 @@ def load_json(path, filename):
         return {}
 
 
-def save_json(path, filename, obj):
-    filename = os.path.join(path, filename)
+def save_json(filename, obj):
     with open(app_settings, 'w') as fp:
         json.dump(filename, obj)
 
@@ -73,14 +71,14 @@ class SettingsDict(collections.MutableMapping):
         return iter(self.dct)
 
     def load(self):
-        self.dct = load_json(self.path, 'default_settings.json')
-        self.dct.update(load_json(self.path, 'settings.json'))
-        self.local_settings = load_json(self.path, 'local_settings.json')
+        self.dct = load_json(os.path.join(self.path, 'default_settings.json'))
+        self.dct.update(load_json(os.path.join(self.path, 'settings.json')))
+        self.local_settings = load_json(os.path.join(self.path, 'local_settings.json'))
         self.dct.update(self.local_settings)
         self.loaded = True
 
     def save(self):
-        save_json(self.path, 'local_settings.json', self.local_settings)
+        save_json(os.path.join(self.path, 'local_settings.json'), self.local_settings)
 
 
 class TingApp(object):
@@ -89,7 +87,7 @@ class TingApp(object):
            if path is None, then will let you inspect the current app"""
         if path is None:
             path = os.path.dirname(os.path.abspath(sys.argv[0]))
-        self.info = load_json(path, 'app.tbinfo')
+        self.info = load_json(os.path.join(path, 'app.tbinfo'))
         self.settings = SettingsDict(path)
             
 app = TingApp()

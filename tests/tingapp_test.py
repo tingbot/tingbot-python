@@ -1,13 +1,14 @@
 import unittest
 import tingbot.tingapp as tingapp
 import json
+import os
 
-def fake_load_json(path,filename):
-    if filename == tingapp.default_settings:
+def fake_load_json(filename):
+    if os.path.basename(filename) == 'default_settings.json':
         return {'a':1, 'b':2, 'c':3}
-    elif filename == tingapp.general_settings:
+    elif os.path.basename(filename) == 'settings.json':
         return {'b':4, 'c':5}
-    elif filename == tingapp.local_settings:
+    elif os.path.basename(filename) == 'local_settings.json':
         return {'c':6}
 
 class TestSettings(unittest.TestCase):
@@ -22,8 +23,8 @@ class TestSettings(unittest.TestCase):
     def tearDown(self):
         tingapp.save_json = self.save_json_old
         tingapp.load_json = self.load_json_old
-        
-    def fake_save_json(self,path,filename,obj):
+
+    def fake_save_json(self,filename,obj):
         self.json_output = json.loads(json.dumps(obj))
         
     def test_simple_assign_and_retrieve(self):

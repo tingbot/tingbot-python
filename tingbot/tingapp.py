@@ -21,8 +21,8 @@ def load_json(filename):
 
 
 def save_json(filename, obj):
-    with open(app_settings, 'w') as fp:
-        json.dump(filename, obj)
+    with open(filename, 'w') as fp:
+        json.dump(fp, obj)
 
 
 class SettingsDict(collections.MutableMapping):

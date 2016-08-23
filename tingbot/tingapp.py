@@ -2,7 +2,10 @@ import collections
 import json
 import os
 import sys
-
+import hashlib
+import logging
+from .utils import cached_property
+from .graphics import Image
 
 def load_json(filename):
     try:
@@ -89,13 +92,73 @@ class SettingsDict(collections.MutableMapping):
         save_json(os.path.join(self.path, 'local_settings.json'), self.local_settings)
 
 
+def generic_icon(name):
+    name_hash = int(hashlib.md5(name).hexdigest(), 16)
+    color_options = [
+        'blue', 'teal', 'green', 'olive', 'yellow', 'orange', 'red',
+        'fuchsia', 'purple', 'maroon'
+    ]
+    color = color_options[name_hash % len(color_options)]
+
+    letter = name[0].lower()
+    result = Image(size=(96, 96))
+
+    result.fill(color=color)
+    image = os.path.join(os.path.dirname(__file__), 'default-icon-texture-96.png')
+    result.image(image)
+    font = os.path.join(os.path.dirname(__file__), 'MiniSet2.ttf')
+
+    descenders = ['g', 'p', 'q', 'y']
+    ascenders = ['b', 'd', 'f', 'h', 'k', 'l', 't']
+    y_offset = 0
+
+    if letter in descenders:
+        y_offset -= 8
+    if letter in ascenders:
+        y_offset += 6
+
+    result.text(letter,
+        xy=(52, 41 + y_offset),
+        color='white',
+        font=font,
+        font_size=70)
+
+    return result
+
+
 class TingApp(object):
     def __init__(self, path=None):
         """path is the root path of the app you want to inspect
            if path is None, then will let you inspect the current app"""
         if path is None:
             path = os.path.dirname(os.path.abspath(sys.argv[0]))
-        self.info = load_json(os.path.join(path, 'app.tbinfo'))
+        self.path = path
         self.settings = SettingsDict(path)
+
+    @cached_property
+    def info(self):
+        return load_json(os.path.join(self.path, 'app.tbinfo'))
+
+    @property
+    def name(self):
+        if 'name' in self.info:
+            return self.info['name']
+        else:
+            return os.path.basename(self.path)
+
+    @cached_property
+    def icon(self):
+        image_path = os.path.join(self.path, 'icon.png')
+
+        if not os.path.isfile(image_path):
+            return generic_icon(self.name)
+
+        try:
+            image = Image.load(image_path)
+        except:
+            logging.exception('Failed to load image at %s', image_path)
+            return generic_icon(self.name)
+
+        return image
             
 app = TingApp()

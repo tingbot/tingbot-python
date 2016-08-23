@@ -352,10 +352,6 @@ screen = Screen()
 class Image(Surface):
     @classmethod
     def load(cls, filename):
-        warnings.warn(
-            'Image.load is deprecated. Use Image.load_filename instead.',
-            DeprecationWarning,
-            stacklevel=2)
         return cls.load_filename(filename)
 
     @classmethod

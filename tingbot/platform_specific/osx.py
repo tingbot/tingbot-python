@@ -5,7 +5,7 @@ from Cocoa import (
 from Quartz import CGPointZero, CGRectMake, CGPointMake
 import objc
 import pygame
-from ..utils import cached_property
+from ..utils import cached_property, get_resource
 
 
 class BackgroundImageView(NSImageView):

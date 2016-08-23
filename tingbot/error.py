@@ -1,6 +1,6 @@
 import os
 import pygame.image, pygame.transform, pygame.font
-from . import graphics
+from . import graphics, utils
 
 sad_tingbot_string = '''
 #########################
@@ -57,7 +57,7 @@ def error_screen(exc_info):
         filename = os.path.basename(frame.f_code.co_filename)
         line2 = '%s:%i' % (filename, frame.f_lineno)
 
-        font = os.path.join(os.path.dirname(__file__), '04B_03__.TTF')
+        font = utils.get_resource('04B_03__.TTF')
 
         screen.text(line1, xy=(320/2, 135), color='white', align='center', font=font, font_size=16)
         screen.text(line2, xy=(320/2, 155), color='white', align='center', font=font, font_size=16)

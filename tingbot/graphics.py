@@ -4,7 +4,7 @@ import os, time, numbers, math, io, warnings, sys
 import pygame
 import requests
 import cache
-from .utils import cached_property
+from .utils import cached_property, get_resource
 
 # colors from http://clrs.cc/
 color_map = {
@@ -28,7 +28,7 @@ color_map = {
     'black': (0, 0, 0),
 }
 
-broken_image_file = os.path.join(os.path.dirname(__file__), 'broken_image.png')
+broken_image_file = get_resource('broken_image.png')
 
 def _xy_add(t1, t2):
     return (t1[0] + t2[0], t1[1] + t2[1])
@@ -90,7 +90,7 @@ def _scale(scale):
 def _font(font, font_size, antialias):
     pygame.font.init()
     if font is None:
-        font = os.path.join(os.path.dirname(__file__), 'Geneva.ttf')
+        font = get_resource('Geneva.ttf')
         if antialias is None:
             antialias = (font_size < 9 or 17 < font_size)
 

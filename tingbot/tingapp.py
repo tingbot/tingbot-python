@@ -4,7 +4,7 @@ import os
 import sys
 import hashlib
 import logging
-from .utils import cached_property
+from .utils import cached_property, get_resource
 from .graphics import Image
 
 def load_json(filename):
@@ -104,9 +104,9 @@ def generic_icon(name):
     result = Image(size=(96, 96))
 
     result.fill(color=color)
-    image = os.path.join(os.path.dirname(__file__), 'default-icon-texture-96.png')
+    image = get_resource('default-icon-texture-96.png')
     result.image(image)
-    font = os.path.join(os.path.dirname(__file__), 'MiniSet2.ttf')
+    font = get_resource('MiniSet2.ttf')
 
     descenders = ['g', 'p', 'q', 'y']
     ascenders = ['b', 'd', 'f', 'h', 'k', 'l', 't']

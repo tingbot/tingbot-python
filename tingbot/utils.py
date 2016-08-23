@@ -101,3 +101,11 @@ def call_with_optional_arguments(func, **kwargs):
             del kwargs[arg]
 
     func(**kwargs)
+
+
+def get_resource(name):
+    '''
+    Returns the path to a resource bundled in this library (at tingbot/resources/<name>)
+    '''
+    import os
+    return os.path.join(os.path.dirname(__file__), 'resources', name)

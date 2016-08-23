@@ -161,9 +161,9 @@ class Surface(object):
     def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None, max_width=sys.maxsize, max_height=sys.maxsize, max_lines=sys.maxsize):
         if xy is None:
             if max_width == sys.maxsize:
-                max_width = 320
+                max_width = self.width
             if max_height == sys.maxsize:
-                max_height = 240
+                max_height = self.height
 
         text_image = Image.from_text(
             string,

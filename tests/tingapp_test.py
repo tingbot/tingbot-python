@@ -57,6 +57,9 @@ class TestSettings(unittest.TestCase):
         self.settings['fred'] = 15
         self.assertEqual(self.json_output,{'fred':15,'c':6})
 
+    def test_contains(self):
+        self.assertEqual('a' in self.settings, True)
+
     @unittest.expectedFailure                
     def test_assign_to_subkey(self):
         self.settings['map'] = {}

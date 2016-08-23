@@ -47,9 +47,13 @@ class SettingsDict(collections.MutableMapping):
         self.path = path
     
     def __contains__(self, item):
+        if not self.loaded:
+            self.load()
         return item in self.dct
         
     def __len__(self):
+        if not self.loaded:
+            self.load()
         return len(self.dct)
         
     def __getitem__(self, key):
@@ -65,9 +69,13 @@ class SettingsDict(collections.MutableMapping):
         self.save()
         
     def __delitem__(self, key):
+        if not self.loaded:
+            self.load()
         del self.dct[key]
         
     def __iter__(self):
+        if not self.loaded:
+            self.load()
         return iter(self.dct)
 
     def load(self):

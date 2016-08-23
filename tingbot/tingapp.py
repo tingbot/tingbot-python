@@ -148,17 +148,23 @@ class TingApp(object):
 
     @cached_property
     def icon(self):
-        image_path = os.path.join(self.path, 'icon.png')
+        icon_path = os.path.join(self.path, 'icon.png')
 
-        if not os.path.isfile(image_path):
+        if not os.path.isfile(icon_path):
             return generic_icon(self.name)
 
         try:
-            image = Image.load(image_path)
+            icon = Image.load(icon_path)
         except:
-            logging.exception('Failed to load image at %s', image_path)
+            logging.exception('Failed to load icon at %s', icon_path)
             return generic_icon(self.name)
 
-        return image
+        if icon.size != (96, 96):
+            # resize the icon by redrawing in the correct size
+            resized_icon = Image(size=(96, 96))
+            resized_icon.image(icon, scale='shrinkToFit')
+            return resized_icon
+
+        return icon
             
 app = TingApp()

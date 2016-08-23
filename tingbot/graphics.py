@@ -400,7 +400,13 @@ class Image(Surface):
 
         if max_height != sys.maxsize:
             line_height = font.get_linesize()
-            max_lines = min(max_lines, int(max_height//line_height))
+            max_lines_by_height = int(max_height//line_height)
+
+            if max_lines_by_height < 1:
+                # never collapse the text to zero lines because of the height restriction
+                max_lines_by_height = 1
+
+            max_lines = min(max_lines, max_lines_by_height)
 
         surface = render_text(string, font, antialias, color, max_lines, max_width, ellipsis=u'…', align=align)
 

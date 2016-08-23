@@ -76,7 +76,7 @@ class TestWebImage(TimeControlCase):
     def setUp(self):
         super(TestWebImage,self).setUp()
         httpretty.enable()
-        self.image_content = open("tingbot/broken_image.png",'r').read()
+        self.image_content = open("tingbot/resources/broken_image.png",'r').read()
         
     def tearDown(self):
         httpretty.disable()
@@ -147,7 +147,7 @@ class TestWebImage(TimeControlCase):
                    
 class TestFileImage(unittest.TestCase):
     def test_basic_load(self):
-        f = cache.FileImage('tingbot/broken_image.png')
+        f = cache.FileImage('tingbot/resources/broken_image.png')
         
     def test_bad_location(self):
         with self.assertRaises(IOError):
@@ -156,13 +156,13 @@ class TestFileImage(unittest.TestCase):
     @mock.patch('tingbot.cache.os.path.getmtime')     
     def test_is_fresh_if_unchanged_mod_time(self,mtime):
         mtime.return_value = 200
-        f = cache.FileImage('tingbot/broken_image.png')
+        f = cache.FileImage('tingbot/resources/broken_image.png')
         self.assertTrue(f.is_fresh())
     
     @mock.patch('tingbot.cache.os.path.getmtime')     
     def test_is_fresh_if_changed_mod_time(self,mtime):
         mtime.return_value = 200
-        f = cache.FileImage('tingbot/broken_image.png')
+        f = cache.FileImage('tingbot/resources/broken_image.png')
         mtime.return_value = 300
         self.assertFalse(f.is_fresh())
     
@@ -170,7 +170,7 @@ class TestImageCache(TimeControlCase):
     def setUp(self):
         super(TestImageCache,self).setUp()
         httpretty.enable()
-        self.image_content = open("tingbot/broken_image.png",'r').read()
+        self.image_content = open("tingbot/resources/broken_image.png",'r').read()
         self.tiny_content = open("tests/blank.png",'r').read()
         httpretty.register_uri(httpretty.GET,re.compile("http://example.com/..png"), body=self.image_content)
         httpretty.register_uri(httpretty.GET,re.compile("http://example.com/tiny/..png"), body=self.tiny_content)

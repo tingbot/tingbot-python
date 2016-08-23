@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import os, textwrap, shutil, filecmp, subprocess, sys, logging
+import os, textwrap, shutil, filecmp, subprocess, sys, logging, fnmatch
 import paramiko
 from .appdirs import AppDirs
 
@@ -23,13 +23,20 @@ class SSHSession(object):
         if code != 0:
             raise SSHSession.RemoteCommandError(command, code, output, error_output)
 
-    def put_dir(self, source, target):
+    put_dir_default_ignore_patterns = ['venv', 'local_settings.json', '.git', '*.pyc']
+
+    def put_dir(self, source, target, ignore_patterns=put_dir_default_ignore_patterns):
         sftp = self.client.open_sftp()
 
         try:
             sftp.mkdir(target, 0755)
 
             for filename in os.listdir(source):
+                # if filename matches any of the patterns in ignore_patterns, continue to
+                # the next file
+                if any(fnmatch.fnmatch(filename, i) for i in ignore_patterns):
+                    continue
+
                 local_path = os.path.join(source, filename)
                 remote_path = '%s/%s' % (target, filename)
 

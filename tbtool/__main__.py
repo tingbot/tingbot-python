@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import os, textwrap, shutil, filecmp, subprocess, sys, logging, fnmatch
+import os, textwrap, shutil, filecmp, subprocess, sys, logging, fnmatch, threading
+from .get_terminal_size import get_terminal_size
 import paramiko
 from .appdirs import AppDirs
 
@@ -22,6 +23,41 @@ class SSHSession(object):
 
         if code != 0:
             raise SSHSession.RemoteCommandError(command, code, output, error_output)
+
+    def shell(self, command=None):
+        '''
+        runs a command, piping stdin to the remote shell and piping stdout and stderr
+        to the shell.
+        '''
+
+        channel = self.client.get_transport().open_session()
+
+        if sys.stdout.isatty() and not command:
+            terminal_size = get_terminal_size()
+
+            channel.get_pty(
+                term=os.environ.get('TERM', 'vt100'),
+                width=terminal_size.columns,
+                height=terminal_size.lines,
+            )
+
+        channel.exec_command(command or 'bash')
+
+        stdin = channel.makefile('wb')
+        stdout = channel.makefile('r')
+        stderr = channel.makefile_stderr('r')
+
+        threading.Thread(target=self.pipe, args=(sys.stdin, stdin)).start()
+        threading.Thread(target=self.pipe, args=(stdout, sys.stdout)).start()
+        threading.Thread(target=self.pipe, args=(stderr, sys.stderr)).start()
+
+    def pipe(self, from_file, to_file):
+        with to_file:
+            while True:
+                data = from_file.read()
+                if data == '':
+                    break
+                to_file.write(data)
 
     put_dir_default_ignore_patterns = ['venv', 'local_settings.json', '.git', '*.pyc']
 
@@ -123,6 +159,9 @@ def _run(app_path, extra_env=None):
 def simulate(app_path):
     _run(app_path)
 
+def shell(hostname, command):
+    session = SSHSession(hostname)
+    session.shell(command)
 
 def run(app_path, hostname):
     print 'tbtool: Connecting to Pi...'

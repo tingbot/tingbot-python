@@ -101,11 +101,11 @@ def generic_icon(name):
     color = color_options[name_hash % len(color_options)]
 
     letter = name[0].lower()
-    result = Image(size=(96, 96))
+    icon = Image(size=(96, 96))
 
-    result.fill(color=color)
+    icon.fill(color=color)
     image = get_resource('default-icon-texture-96.png')
-    result.image(image)
+    icon.image(image)
     font = get_resource('MiniSet2.ttf')
 
     descenders = ['g', 'p', 'q', 'y']
@@ -117,13 +117,17 @@ def generic_icon(name):
     if letter in ascenders:
         y_offset += 6
 
-    result.text(letter,
+    icon.text(letter,
         xy=(52, 41 + y_offset),
         color='white',
         font=font,
         font_size=70)
 
-    return result
+    # they're a little large compared to the real icons, let's size them down a bit
+    resized_icon = Image(size=(96,96))
+    resized_icon.image(icon, scale=0.9)
+
+    return resized_icon
 
 
 class TingApp(object):

@@ -93,7 +93,7 @@ class WindowController(object):
         rect.size.width = 470
         rect.size.height = 353
 
-        view_rect = rect
+        view_rect = rect.copy()
         view_rect.origin = CGPointZero
 
         image_view = BackgroundImageView.alloc().initWithFrame_(view_rect)

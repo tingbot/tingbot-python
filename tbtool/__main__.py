@@ -301,7 +301,7 @@ def main():
         if not os.path.exists(args['<app>']):
             raise Exception("%s: no such file or directory" % args['<app>'])
 
-        app_path = os.path.abspath(args['<app>'])
+        app_path = os.path.realpath(args['<app>'])
 
         if args['simulate']:
             simulate(app_path)

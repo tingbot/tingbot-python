@@ -1,4 +1,4 @@
-import platform, os
+import sys, os
 
 def is_running_on_tingbot():
     """
@@ -22,7 +22,7 @@ keyboard_attached = no_op_returning(True)
 joystick_attached = no_op_returning(False)
 get_wifi_cell = no_op_returning(None)
 
-if platform.system() == 'Darwin':
+if sys.platform == 'darwin':
     from osx import fixup_env, create_main_surface, register_button_callback
 elif is_running_on_tingbot():
     from tingbot import (fixup_env, create_main_surface, register_button_callback,

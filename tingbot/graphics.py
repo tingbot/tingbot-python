@@ -357,8 +357,8 @@ class Image(Surface):
     @classmethod
     def load_filename(cls, filename):
         """Open a local file as an Image"""
-        image_file = open(filename, 'rb')
-        return cls.load_file(image_file, filename)
+        with open(filename, 'rb') as image_file:
+            return cls.load_file(image_file, name_hint=filename)
 
     @classmethod
     def load_url(cls, url):
@@ -366,25 +366,53 @@ class Image(Surface):
         response = requests.get(url)
         response.raise_for_status()
         image_file = io.BytesIO(response.content)
-        return cls.load_file(image_file, url)
+        return cls.load_file(image_file, name_hint=url)
 
     @classmethod
-    def load_file(cls, file_object, name_hint):
-        """load a file-like object as an image. Takes name_hint as an optional extra - if this
-           finishes with .gif, then a GIFImage will be returned"""
-        with file_object:
-            # if it's a gif, load it using the special GIFImage class
-            _, extension = os.path.splitext(name_hint)
-            if extension.lower() == '.gif':
-                return GIFImage(image_file=file_object)
+    def load_file(cls, file_object, name_hint='', loader='auto'):
+        """Loads a file-like object as an image.
 
+        Args:
+            file_object (filelike): an open file-like object
+            name_hint (str): the name of the file, used to guess the loader to use
+            loader (str): How to load the image, either 'gif', 'pil', 'pygame', or 'auto'.
+                If 'gif', a GIFImage will be returned. If 'auto', the name_hint is used to
+                choose the best loader.
+
+        Returns:
+            An Image or GIFImage object, that can be used with screen.image() for example.
+        """
+
+        if loader == 'auto':
+            _, extension = os.path.splitext(name_hint)
+
+            if extension.lower() == '.gif':
+                # if it's a gif, load it using the special GIFImage class
+                loader = 'gif'
+            elif extension.lower() in ['.jpg', '.jpeg'] and sys.platform == 'darwin':
+                # There's a bug with pygame on Mac, JPEGs are distorted on load.
+                # (it's actually a bug in SDL_Image)
+                # https://bitbucket.org/pygame/pygame/issues/284/max-osx-el-capitan-using-the-deprecated
+                # Working around by loading with PIL instead.
+                loader = 'pil'
+            else:
+                loader = 'pygame'
+
+        if loader == 'gif':
+            return GIFImage(image_file=file_object)
+        elif loader == 'pil':
+            from PIL import Image as PILImage
+            return cls.from_pil_image(PILImage.open(file_object))
+        elif loader == 'pygame':
             # ensure the screen surface has been created (otherwise pygame doesn't know the 'video mode')
             screen.ensure_display_setup()
 
             surface = pygame.image.load(file_object)
             surface = surface.convert_alpha()
+        else:
+            raise ValueError('Unknown image loader: %r' % loader)
 
-        return cls(surface)
+        return cls(surface=surface)
 
     @classmethod
     def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None, max_lines=sys.maxsize, max_width=sys.maxsize, max_height=sys.maxsize, align=0):
@@ -407,6 +435,19 @@ class Image(Surface):
         surface = render_text(string, font, antialias, color, max_lines, max_width, ellipsis=u'…', align=align)
 
         return cls(surface=surface)
+
+    @classmethod
+    def from_pil_image(cls, pil_image):
+        screen.ensure_display_setup()
+
+        try:  # account for different versions of Pillow
+            pygame_image = pygame.image.fromstring(pil_image.tobytes(), pil_image.size, pil_image.mode)
+        except AttributeError:
+            pygame_image = pygame.image.fromstring(pil_image.tostring(), pil_image.size, pil_image.mode)
+
+        pygame_image.convert_alpha()
+
+        return cls(surface=pygame_image)
 
     def __init__(self, surface=None, size=None):
         pygame.init()

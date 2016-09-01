@@ -14,14 +14,26 @@ class SSHSession(object):
         self.client.connect(hostname, username='pi', key_filename=key_path)
 
     def exec_command(self, command):
-        stdin, stdout, stderr = self.client.exec_command(command)
+        channel = self.client.get_transport().open_session()
+        channel.set_combine_stderr(True)
 
-        output = stdout.read()
-        error_output = stderr.read()
-        code = stdout.channel.recv_exit_status()
+        channel.exec_command(command)
+
+        # pass through the output to stdout
+        while True:
+            data = channel.recv(1024)
+            if data == '':
+                break
+            sys.stdout.write(data)
+            sys.stdout.flush()
+
+        code = channel.recv_exit_status()
+
+        channel.shutdown_read()
+        channel.shutdown_write()
 
         if code != 0:
-            raise SSHSession.RemoteCommandError(command, code, output, error_output)
+            raise SSHSession.RemoteCommandError(command, code)
 
     put_dir_default_ignore_patterns = ['venv', 'local_settings.json', '.git', '*.pyc']
 
@@ -143,7 +155,7 @@ def run(app_path, hostname):
         session.put_dir(app_path, app_install_location)
 
         print 'tbtool: Starting app...'
-        session.exec_command('tbopen "%s"' % app_install_location)
+        session.exec_command('tbopen --follow "%s"' % app_install_location)
     finally:
         session.close()
 

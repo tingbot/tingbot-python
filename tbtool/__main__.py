@@ -32,7 +32,7 @@ class SSHSession(object):
 
         channel = self.client.get_transport().open_session()
 
-        if sys.stdout.isatty() and not command:
+        if sys.stdout.isatty():
             terminal_size = get_terminal_size()
 
             channel.get_pty(
@@ -47,17 +47,34 @@ class SSHSession(object):
         stdout = channel.makefile('r')
         stderr = channel.makefile_stderr('r')
 
-        threading.Thread(target=self.pipe, args=(sys.stdin, stdin)).start()
-        threading.Thread(target=self.pipe, args=(stdout, sys.stdout)).start()
-        threading.Thread(target=self.pipe, args=(stderr, sys.stderr)).start()
+        import tty
+        tty.setraw(sys.stdin)
+
+        try:
+            for from_file, to_file in [(sys.stdin, stdin), (stdout, sys.stdout), (stderr, sys.stderr)]:
+                t = threading.Thread(target=self.pipe, args=(from_file, to_file))
+                t.daemon = True
+                t.start()
+        finally:
+            tty.setcbreak(sys.stdin)
+
+        return channel.recv_exit_status()
 
     def pipe(self, from_file, to_file):
         with to_file:
             while True:
-                data = from_file.read()
+                data = from_file.read(1)
+                # print 'data', data
                 if data == '':
                     break
                 to_file.write(data)
+                if hasattr(to_file, 'flush'):
+                    to_file.flush()
+
+            to_file.write('\x04')  # EOF
+
+            if hasattr(to_file, 'flush'):
+                to_file.flush()
 
     put_dir_default_ignore_patterns = ['venv', 'local_settings.json', '.git', '*.pyc']
 
@@ -161,7 +178,10 @@ def simulate(app_path):
 
 def shell(hostname, command):
     session = SSHSession(hostname)
-    session.shell(command)
+    try:
+        return session.shell(command)
+    finally:
+        session.close()
 
 def run(app_path, hostname):
     print 'tbtool: Connecting to Pi...'
@@ -305,6 +325,7 @@ def tingbot_run(app_path):
 def main():
     args = docopt(textwrap.dedent('''
         Usage: 
+          tbtool [-v] shell <hostname> <command>
           tbtool [-v] simulate <app>
           tbtool [-v] run <app> <hostname>
           tbtool [-v] install <app> <hostname>
@@ -335,6 +356,9 @@ def main():
         logging.basicConfig(level=logging.INFO)
     else:
         logging.basicConfig(level=logging.CRITICAL+1)
+
+    if args['shell']:
+        sys.exit(shell(args['<hostname>'], args['<command>']))
 
     try:
         if not os.path.exists(args['<app>']):

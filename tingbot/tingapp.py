@@ -145,7 +145,7 @@ class TingApp(object):
 
     @property
     def name(self):
-        if 'name' in self.info:
+        if 'name' in self.info and self.info['name'] != '':
             return self.info['name']
         else:
             return os.path.basename(self.path)

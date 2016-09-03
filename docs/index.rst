@@ -12,13 +12,17 @@ Contents:
    :maxdepth: 2
 
    readme
-   gettingstarted
+   graphics
+   touch
+   buttons
+   webhooks
+   settings
+   runloop
+   hardware
    reference
 
 Indices and tables
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 

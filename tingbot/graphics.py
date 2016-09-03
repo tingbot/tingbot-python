@@ -127,6 +127,10 @@ def _topleft_from_aligned_xy(xy, align, size, surface_size):
 image_cache = cache.ImageCache()
 
 class Surface(object):
+    """
+    The base class for the :py:class:`Screen` and :py:class:`Image` classes, and the
+    :py:data:`screen` object.
+    """
     def __init__(self, surface=None):
         if surface is None:
             if not hasattr(self, '_create_surface'):
@@ -136,7 +140,7 @@ class Surface(object):
 
     @cached_property
     def surface(self):
-        ''' this function is only called once if a surface is not set in the constructor '''
+        # this function is only called once if a surface is not set in the constructor
         surface = self._create_surface()
 
         if not surface:
@@ -146,6 +150,7 @@ class Surface(object):
 
     @property
     def size(self):
+        """The size of the surface in pixels as a tuple (width, height)"""
         return self.surface.get_size()
 
     @property
@@ -165,9 +170,34 @@ class Surface(object):
             self.surface.blit(tmp_surface, rect)
 
     def fill(self, color):
+        """
+        Fills the entire surface with a solid color
+        """
         self._fill(_color(color), self.surface.get_rect())
 
-    def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, antialias=None, max_width=sys.maxsize, max_height=sys.maxsize, max_lines=sys.maxsize):
+    def text(self, string, xy=None, color='grey', align='center', font=None, font_size=32, 
+             antialias=None, max_width=sys.maxsize, max_height=sys.maxsize, max_lines=sys.maxsize):
+        """
+        Draws text to the surface.
+
+        Args:
+            string: The text to draw.
+            xy (tuple): The position (x, y) to draw the text, as measured from the top-left.
+            color (tuple or str): The color (r, g, b) or color name.
+            align (str): How to align the text relative to `xy`, or relative to the drawing surface
+                if `xy` is None. Defaults to 'center'.
+            font (str): The filename of the font to use.
+            font_size (int): The size to render the font.
+            antialias (bool): Set to false to draw pixel fonts.
+            max_width (int): The maximum width of the text in pixels.
+                If `xy` is not specified, defaults to the width of the drawing surface. Otherwise,
+                defaults to unlimited.
+            max_height (int): The maximum height of the text in pixels.
+                If `xy` is not specified, defaults to the width of the drawing surface. Otherwise,
+                defaults to unlimited.
+            max_lines (int): The maximum number of lines to use. Set to 1 to draw a single line
+                of text. By default, unlimited.
+        """
         if xy is None:
             if max_width == sys.maxsize:
                 max_width = self.width
@@ -188,6 +218,16 @@ class Surface(object):
         self.image(text_image, xy=xy, align=align, scale=1)
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
+        """
+        Draws a rectangle.
+
+        Args:
+            xy (tuple): The position (x, y) to draw the rectangle, as measured from the top-left.
+            size (tuple): The size (width, height) of the rectangle.
+            color (tuple or str): The color (r, g, b) or color name.
+            align (str): How to align the box relative to `xy`, or relative to the drawing surface
+                if `xy` is None. Defaults to 'center'.
+        """
         if len(size) != 2:
             raise ValueError('size should be a 2-tuple')
 
@@ -196,9 +236,19 @@ class Surface(object):
         self._fill(_color(color), pygame.Rect(xy, size))
 
     def line(self, start_xy, end_xy, width=1, color='grey', antialias=True):
+        """
+        Draws a line between two points.
+
+        Args:
+            start_xy (tuple): The position (x, y) of the start of the line.
+            end_xy (tuple):  The position (x, y) of the end of the line.
+            width (int): The thickness of the line in pixels. Defaults to 1.
+            color (tuple or str): The color (r, g, b) or color name.
+        """
+
         # antialiased thick lines aren't supported by pygame, and the aaline function has some
-        # strange bugs on OS X (line comes out the wrong colors, see http://stackoverflow.com/q/24208783/382749)
-        # so antialiasing isn't currently supported.
+        # strange bugs on OS X (line comes out the wrong colors, see
+        # http://stackoverflow.com/q/24208783/382749) so antialiasing isn't currently supported.
 
         if width == 1:
             pygame.draw.line(self.surface, _color(color), start_xy, end_xy, width)
@@ -224,7 +274,37 @@ class Surface(object):
 
             pygame.draw.polygon(self.surface, _color(color), points)
 
-    def image(self, image, xy=None, scale='shrinkToFit', alpha=1.0, align='center', max_width=sys.maxsize, max_height=sys.maxsize, raise_error=True):
+    def image(self, image, xy=None, scale='shrinkToFit', alpha=1.0, align='center',
+              max_width=sys.maxsize, max_height=sys.maxsize, raise_error=True):
+        """screen.image(image, xy=None, scale='shrinkToFit', alpha=1.0, align='center', max_width=sys.maxsize, max_height=sys.maxsize, raise_error=True)
+
+        Draws an image to the screen.
+
+        Args:
+            image (str or Image): A filename, URL or `Image` object to draw. If `image` is
+                a URL, then it will attempt to download and display it.
+            xy (tuple): The position (x, y) to draw the text, as measured from the top-left.
+            scale (str or number): a number that changes the size of the image e.g. scale=2
+                makes the image bigger, scale=0.5 makes the image smaller. There are also
+                special values 'fit' and 'fill', which will fit or fill the image according
+                to max_width and max_height. Defaults to 'shrinkToFit', which will fit an image 
+                without enlarging.
+            alpha (number): The opacity of the image - 0.0 means fully transparent, 1.0 is fully
+                opaque.
+            max_width (int): When `scale` is 'fit', 'fill', 'shrinkToFit' used to size the image.
+            max_height (int): When `scale` is 'fit', 'fill', 'shrinkToFit' used to size the image.
+            raise_error (bool): When loading an image from a URL, whether to raise an error if
+                loading fails. Defaults to True. If false, a placeholder image will be substituted.
+
+        Images can be animated GIFs. Draw them in a draw() function to see them animate.
+
+        Images referred to by filename or URL are cached, so this can be called in a loop without
+        performance concerns.
+
+        Raises:
+            requests.exceptions.RequestException: The image couldn't be loaded from URL.
+        """
+
         if isinstance(image, basestring):
             try:
                 image = image_cache.get_image(image)
@@ -289,6 +369,9 @@ class Surface(object):
 
 
 class Screen(Surface):
+    """
+    The class of the singleton :py:data:`screen` object.
+    """
     def __init__(self):
         super(Screen, self).__init__()
         self.needs_update = False
@@ -331,6 +414,10 @@ class Screen(Surface):
 
     @property
     def brightness(self):
+        """
+        The brightness of the backlight of the screen, from 0 to 100. 0 is off, 100 is full
+        brightness. Defaults to 75.
+        """
         return self._brightness
 
     @brightness.setter
@@ -350,19 +437,35 @@ screen = Screen()
 
 
 class Image(Surface):
+    """
+    An image that can be loaded from a file, or created and drawn to separately from the screen.
+    """
     @classmethod
     def load(cls, filename):
+        """
+        Open a local file as an Image.
+
+        Args:
+            filename (str): The filename of the image.
+        """
         return cls.load_filename(filename)
 
     @classmethod
     def load_filename(cls, filename):
-        """Open a local file as an Image"""
         with open(filename, 'rb') as image_file:
             return cls.load_file(image_file, name_hint=filename)
 
     @classmethod
     def load_url(cls, url):
-        """Open a url as an Image"""
+        """
+        Loads an image from a URL.
+
+        Returns:
+            An Image or GIFImage object, that can be used with screen.image() for example.
+
+        Raises:
+            requests.exceptions.RequestException: The image couldn't be loaded from URL.
+        """
         response = requests.get(url)
         response.raise_for_status()
         image_file = io.BytesIO(response.content)
@@ -370,7 +473,8 @@ class Image(Surface):
 
     @classmethod
     def load_file(cls, file_object, name_hint='', loader='auto'):
-        """Loads a file-like object as an image.
+        """
+        Loads a file-like object as an image.
 
         Args:
             file_object (filelike): an open file-like object
@@ -415,7 +519,27 @@ class Image(Surface):
         return cls(surface=surface)
 
     @classmethod
-    def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None, max_lines=sys.maxsize, max_width=sys.maxsize, max_height=sys.maxsize, align=0):
+    def from_text(cls, string, color='grey', font=None, font_size=32, antialias=None,
+                  max_lines=sys.maxsize, max_width=sys.maxsize, max_height=sys.maxsize, align=0):
+        """
+        Draws text to the surface.
+
+        Args:
+            string: The text to draw.
+            color (tuple or str): The color (r, g, b) or color name.
+            font (str): The filename of the font to use.
+            font_size (int): The size to render the font.
+            antialias (bool): Set to `False` to draw pixel fonts.
+            max_lines (int): The maximum number of lines to use. Set to 1 to draw a single line
+                of text. By default, unlimited.
+            max_width (int): The maximum width of the text in pixels.
+                Defaults to unlimited.
+            max_height (int): The maximum height of the text in pixels.
+                Defaults to unlimited.
+            align (number): A number specifying the horizontal alignment of the text. 0.0 is left
+                aligned, 0.5 is centered, 1.0 is right.
+        """
+
         font, antialias = _font(font, font_size, antialias)
         color = _color(color)
         string = unicode(string)
@@ -438,6 +562,9 @@ class Image(Surface):
 
     @classmethod
     def from_pil_image(cls, pil_image):
+        """
+        Loads an image from a PIL Image.
+        """
         screen.ensure_display_setup()
 
         try:  # account for different versions of Pillow

@@ -40,8 +40,11 @@ sys.path.insert(0, project_root)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.autosummary']
 
+napoleon_google_docstring = True
+autodoc_docstring_signature= True
+autodoc_member_order = 'bysource'
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -56,7 +59,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Tingbot'
-copyright = u'2015, Tingbot Ltd.'
+copyright = u'2016 Tingbot Ltd'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout

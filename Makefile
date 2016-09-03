@@ -35,15 +35,12 @@ clean-pyc:
 	find . -name '__pycache__' -exec rm -fr {} +
 
 docs:
-	rm -f docs/tingbot.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ tingbot
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
 servedocs: docs
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+	watchmedo shell-command -p '*.rst;*.py' -c '$(MAKE) -C docs html' -R -D .
 
 release: clean
 	python setup.py sdist upload

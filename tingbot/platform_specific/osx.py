@@ -1,7 +1,7 @@
 import os
 from Cocoa import (
     NSImageView, NSView, NSRectFill, NSColor, NSApplication, NSNotificationCenter, NSRect, NSImage,
-    NSWindow, NSUserDefaults)
+    NSWindow, NSUserDefaults, NSRunLoop, NSDefaultRunLoopMode, NSDate)
 from Quartz import CGPointZero, CGRectMake, CGPointMake
 import objc
 import pygame
@@ -162,6 +162,10 @@ def create_main_surface():
 
     global window_controller
     window_controller = WindowController()
+
+    # run the run loop just once to finish setting up the window
+    NSRunLoop.mainRunLoop().runMode_beforeDate_(NSDefaultRunLoopMode, NSDate.date())
+
     return surface
 
 

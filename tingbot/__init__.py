@@ -46,4 +46,4 @@ __all__ = [
 ]
 __author__ = 'Joe Rickerby'
 __email__ = 'joerick@mac.com'
-__version__ = '0.9.0'
+__version__ = '0.10.0'

@@ -80,15 +80,19 @@ class Button(object):
 
     def down(self, f):
         self.add_callback('down', f)
+        return f
 
     def up(self, f):
         self.add_callback('up', f)
+        return f
 
     def press(self, f):
         self.add_callback('press', f)
+        return f
 
     def hold(self, f):
         self.add_callback('hold', f)
+        return f
 
 # create buttons
 button_names = ('left', 'midleft', 'midright', 'right')

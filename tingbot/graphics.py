@@ -245,6 +245,8 @@ class Surface(object):
             width (int): The thickness of the line in pixels. Defaults to 1.
             color (tuple or str): The color (r, g, b) or color name.
         """
+        if start_xy == end_xy:
+            return
 
         # antialiased thick lines aren't supported by pygame, and the aaline function has some
         # strange bugs on OS X (line comes out the wrong colors, see

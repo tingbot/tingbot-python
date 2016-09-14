@@ -406,6 +406,10 @@ class Screen(Surface):
         super(Screen, self).rectangle(*args, **kwargs)
         self.needs_update = True
 
+    def line(self, *args, **kwargs):
+        super(Screen, self).line(*args, **kwargs)
+        self.needs_update = True
+
     def image(self, *args, **kwargs):
         super(Screen, self).image(*args, **kwargs)
         self.needs_update = True

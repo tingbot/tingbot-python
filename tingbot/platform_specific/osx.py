@@ -75,7 +75,7 @@ class WindowController(object):
 
             self.image_window.cascadeTopLeftFromPoint_(CGPointMake(image_window_left, image_window_top))
         else:
-            self.image_window.center()
+            pass
 
         def window_did_close(notification):
             app.terminate_(None)

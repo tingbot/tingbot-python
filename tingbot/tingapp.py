@@ -11,11 +11,12 @@ def load_json(filename):
     try:
         with open(filename, 'r') as fp:
             result = json.load(fp)
-            if isinstance(result, dict):
-                return result
-            else:
-                return {}
-    except (IOError, ValueError):
+            if not isinstance(result, dict):
+                raise ValueError('Failed to load %s because it should contain a dictionary object, not an array.' % filename)
+            return result
+    except ValueError:
+        raise ValueError('Failed to load %s because it\'s not a valid JSON file' % filename)
+    except IOError:
         #either non-existent file or empty filename
         return {}
 

@@ -63,12 +63,39 @@ the left button, the score goes down.
 
     This marks the function to be called when a button is held down for longer than a
     second.
+    
+    .. code-block:: python
+        :caption: Example: Reset button handler
+
+        @left_button.hold
+        def reset_score():
+            state['score'] = 0
 
 .. py:decorator:: button.down
 
     This marks the function to be called as soon as a button is pushed down. This could
     be the start of a 'press' or a 'hold' event.
 
+    This one is useful for games or when you want the button to be as responsive as possible.
+
+    .. code-block:: python
+        :caption: Example: Reset button handler
+
+        @right_button.down
+        def jump():
+            dude.jump()
+
 .. py:decorator:: button.up
 
     This marks the function to be called when a button is released.
+
+    .. code-block:: python
+        :caption: Example: Down/up handler pair
+
+        @right_button.down
+        def down():
+            state['button_is_down'] = True
+
+        @right_button.up
+        def up():
+            state['button_is_down'] = False

@@ -59,7 +59,7 @@ the left button, the score goes down.
 
     Only presses shorter than a second count - anything longer counts as a 'hold' event.
 
-.. py:decorator:: button.hold
+.. py:decorator:: Button.hold
 
     This marks the function to be called when a button is held down for longer than a
     second.
@@ -71,7 +71,7 @@ the left button, the score goes down.
         def reset_score():
             state['score'] = 0
 
-.. py:decorator:: button.down
+.. py:decorator:: Button.down
 
     This marks the function to be called as soon as a button is pushed down. This could
     be the start of a 'press' or a 'hold' event.
@@ -85,7 +85,7 @@ the left button, the score goes down.
         def jump():
             dude.jump()
 
-.. py:decorator:: button.up
+.. py:decorator:: Button.up
 
     This marks the function to be called when a button is released.
 
@@ -99,3 +99,21 @@ the left button, the score goes down.
         @right_button.up
         def up():
             state['button_is_down'] = False
+
+.. py:decorator:: button.combo(buttons...)
+
+    This marks the function to be called when some buttons are pressed at the same time.
+
+    You can give it as many buttons as you like and ``combo`` will call the function when all
+    the buttons are pressed together.
+
+    .. code-block:: python
+        :caption: Example: Combo to dim/wake the screen
+
+        @button.combo(left_button, right_button)
+        def screen_dim():
+            if screen.brightness == 100:
+                screen.brightness = 0
+            else:
+                screen.brightness = 100
+

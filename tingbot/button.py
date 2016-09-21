@@ -94,6 +94,45 @@ class Button(object):
         self.add_callback('hold', f)
         return f
 
+
+class combo(object):
+    '''
+    A decorator to define an action when multiple buttons are pressed together.
+
+    Pass the buttons to use in a combo into the contructor.
+
+    Example:
+        @combo(left_button, right_button)
+        def do_a_thing():
+            screen.text('C-c-c-COMBO!')
+    '''
+    def __init__(self, *args):
+        self.buttons = args
+        self.button_states = [False,] * len(self.buttons)
+        
+        for button_i, button in enumerate(self.buttons):
+            down_handler, up_handler = self.make_handlers(button_i)
+            button.down(down_handler)
+            button.up(up_handler)
+    
+    def make_handlers(self, button_i):
+        # this code is in a separate method to avoid loop 'late-binding'
+        # problems
+        def down_handler():
+            self.button_states[button_i] = True
+            self.check_button_states()
+        def up_handler():
+            self.button_states[button_i] = False
+        return down_handler, up_handler
+    
+    def __call__(self, func):
+        self.func = func
+    
+    def check_button_states(self):
+        if all(self.button_states):
+            self.func()
+                
+
 # create buttons
 button_names = ('left', 'midleft', 'midright', 'right')
 buttons = {x: Button() for x in button_names}

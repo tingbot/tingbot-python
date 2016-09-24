@@ -72,7 +72,7 @@ class RunLoop(object):
         while self.running:
             if len(self.timers) > 0:
                 try:
-                    self._wait(self.timers[0].next_fire_time)
+                    self._wait(self.timers[-1].next_fire_time)
                 except Exception as e:
                     self._error(e)
                     continue

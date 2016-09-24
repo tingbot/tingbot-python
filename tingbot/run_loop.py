@@ -70,8 +70,6 @@ class RunLoop(object):
     def run(self):
         self.running = True
         while self.running:
-            start_time = time.time()
-
             if len(self.timers) > 0:
                 next_timer = self.timers.pop()
                 if next_timer.active:
@@ -89,7 +87,7 @@ class RunLoop(object):
                             self.schedule(next_timer)
             else:
                 try:
-                    self._wait(start_time + 0.1)
+                    self._wait(time.time() + 0.1)
                 except Exception as e:
                     self._error(e)
 

@@ -4,7 +4,6 @@
 Your Tingbot comes equipped with a resistive touch screen! It's easy to react to touch events.
 
 .. code-block:: python
-
     :caption: Example: Simple drawing app
 
     import tingbot

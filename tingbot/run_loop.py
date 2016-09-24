@@ -75,7 +75,13 @@ class RunLoop(object):
                 if next_timer.active:
                     try:
                         self._wait(next_timer.next_fire_time)
+                    except Exception as e:
+                        self._error(e)
+                        # put the timer back to be picked up on the next loop
+                        self.schedule(next_timer)
+                        continue
 
+                    try:
                         self._before_action_callbacks()
                         next_timer.run()
                         self._after_action_callbacks()

@@ -85,7 +85,7 @@ class RunLoop(object):
                         self._error(e)
                     finally:
                         if next_timer.repeating and next_timer.active:
-                            next_timer.next_fire_time = start_time + next_timer.period
+                            next_timer.next_fire_time = time.time() + next_timer.period
                             self.schedule(next_timer)
             else:
                 try:

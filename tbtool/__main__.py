@@ -226,8 +226,10 @@ def build(app_path):
         venv_pip_path = os.path.join(venv_bin_dir, 'pip')
 
         env = os.environ.copy()
-        env['PIP_FIND_LINKS'] = 'file://%s' % wheelhouse
-        env['PIP_WHEEL_DIR'] = wheelhouse
+        # str() calls are needed because Windows doesn't allow unicode in the environment
+        # (and wheelhouse is a unicode path)
+        env['PIP_FIND_LINKS'] = 'file://%s' % str(wheelhouse)
+        env['PIP_WHEEL_DIR'] = str(wheelhouse)
 
         subprocess.check_call([
                 venv_python_path,

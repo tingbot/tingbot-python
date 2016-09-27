@@ -22,8 +22,10 @@ def load_json(filename):
 
 
 def save_json(filename, obj):
+    data = json.dumps(obj)
+
     with open(filename, 'w') as fp:
-        json.dump(fp, obj)
+        fp.write(data)
 
 
 class SettingsDict(collections.MutableMapping):

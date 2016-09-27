@@ -2,6 +2,8 @@ import unittest
 import tingbot.tingapp as tingapp
 import json
 import os
+import tempfile
+import shutil
 
 def fake_load_json(filename):
     if os.path.basename(filename) == 'default_settings.json':
@@ -13,20 +15,24 @@ def fake_load_json(filename):
 
 class TestSettings(unittest.TestCase):
     def setUp(self):
-        #monkey patch load and save functions
-        self.load_json_old = tingapp.load_json
-        self.save_json_old = tingapp.save_json
-        tingapp.load_json = fake_load_json
-        tingapp.save_json = self.fake_save_json
-        self.settings = tingapp.SettingsDict('fake_dir')
+        self.fake_tingapp_dir = tempfile.mkdtemp()
+
+        with open(os.path.join(self.fake_tingapp_dir, 'default_settings.json'), 'w') as f:
+            json.dump({'a':1, 'b':2, 'c':3}, f)
+        with open(os.path.join(self.fake_tingapp_dir, 'settings.json'), 'w') as f:
+            json.dump({'b':4, 'c':5}, f)
+        with open(os.path.join(self.fake_tingapp_dir, 'local_settings.json'), 'w') as f:
+            json.dump({'c':6}, f)
+
+        self.settings = tingapp.SettingsDict(self.fake_tingapp_dir)
         
     def tearDown(self):
-        tingapp.save_json = self.save_json_old
-        tingapp.load_json = self.load_json_old
+        shutil.rmtree(self.fake_tingapp_dir)
 
-    def fake_save_json(self,filename,obj):
-        self.json_output = json.loads(json.dumps(obj))
-        
+    def local_settings_contents(self):
+        with open(os.path.join(self.fake_tingapp_dir, 'local_settings.json')) as f:
+            return json.load(f)
+
     def test_simple_assign_and_retrieve(self):
         self.settings['fred'] = 12
         self.assertEqual(self.settings['fred'],12)
@@ -43,19 +49,19 @@ class TestSettings(unittest.TestCase):
     def test_save_updates_only_local_vars(self):
         self.settings.load()
         self.settings.save()
-        self.assertEqual(self.json_output,{'c':6})
+        self.assertEqual(self.local_settings_contents(),{'c':6})
     
     def test_assign_to_existing(self):
         self.settings['a'] = 25
-        self.assertEqual(self.json_output,{'a':25,'c':6})
+        self.assertEqual(self.local_settings_contents(),{'a':25,'c':6})
         
     def test_update_existing(self):
         self.settings['c'] = 8
-        self.assertEqual(self.json_output,{'c':8})
+        self.assertEqual(self.local_settings_contents(),{'c':8})
         
     def test_assign_to_new_key(self):
         self.settings['fred'] = 15
-        self.assertEqual(self.json_output,{'fred':15,'c':6})
+        self.assertEqual(self.local_settings_contents(),{'fred':15,'c':6})
 
     def test_contains(self):
         self.assertEqual('a' in self.settings, True)
@@ -64,4 +70,4 @@ class TestSettings(unittest.TestCase):
     def test_assign_to_subkey(self):
         self.settings['map'] = {}
         self.settings['map']['subkey'] = 12
-        self.assertEqual(self.json_output,{'map':{'subkey':12},'c':6})
+        self.assertEqual(self.local_settings_contents(),{'map':{'subkey':12},'c':6})

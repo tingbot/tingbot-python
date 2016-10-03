@@ -25,10 +25,9 @@ webhooks.
 .. py:decorator:: webhook(webhook_name…)
 
     This decorator calls the marked function when a HTTP POST request is made to the URL
-    :samp:`http://webhook.tingbot.com/{webhook_name}`. The POST data of the URL is available to the marked
-    function as the ``data`` parameter.
+    :samp:`http://webhook.tingbot.com/{webhook_name}`. To avoid choosing the same name as somebody else, you can add a `random string of characters <https://www.uuidgenerator.net/>`_ to the end.
 
-    The data is limited to 1kb, and the last value that was POSTed is remembered by the server,
+    The POST data of the URL is available to the marked function as the ``data`` parameter. The data is limited to 1kb, and the last value that was POSTed is remembered by the server,
     so you can feed in relatively slow data sources.
 
 You can use webhooks to push data to Tingbot, or to notify Tingbot of an update that happened

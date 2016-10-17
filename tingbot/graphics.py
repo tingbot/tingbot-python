@@ -217,7 +217,7 @@ class Surface(object):
 
         self.image(text_image, xy=xy, align=align, scale=1)
 
-    def circle(self, xy=None, radius=50, color='grey', align='center'):
+    def circle(self, xy=None, radius=50, color='grey'):
         """
         Draws a circle.
 
@@ -225,16 +225,9 @@ class Surface(object):
             xy (tuple): The position (x, y) to draw the circle, as measured from the top-left.
             radius (int): The radius of the circle.
             color (tuple or str): The color (r, g, b) or color name.
-            align (str): How to align the circle relative to `xy`, or relative to the drawing surface
-                if `xy` is None. Defaults to 'center'.
         """
         if radius <= 0:
             raise ValueError('radius should be a positive integer')
-
-        if radius % 2 != 0:
-            raise ValueError('radius should be a integer')
-            
-        xy = _topleft_from_aligned_xy(xy, align, size, self.size)
 
         self._fill(_color(color), pygame.circle(xy, radius))
 

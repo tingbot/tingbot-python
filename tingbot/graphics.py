@@ -232,7 +232,7 @@ class Surface(object):
         if type(radius) is not int:
             raise ValueError('radius should be an integer')
 
-        self._fill(_color(color), pygame.circle(xy, radius))
+        pygame.draw.circle(self.surface, _color(color), xy, radius, 0)
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
         """

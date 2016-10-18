@@ -226,13 +226,21 @@ class Surface(object):
             radius (int): The radius of the circle.
             color (tuple or str): The color (r, g, b) or color name.
         """
+        if xy is None:
+            raise ValueError('no value given for xy')
+        elif type(xy) is not tuple:
+            raise ValueError('xy should be a 2-tuple')
+        elif len(xy) != 2:
+            raise ValueError('xy should be a 2-tuple')
+
         if radius <= 0:
             raise ValueError('radius should be a positive integer')
 
         if type(radius) is not int:
             raise ValueError('radius should be an integer')
 
-        pygame.draw.circle(self.surface, _color(color), xy, radius, 0)
+        pygame.draw.circle(self.surface, _color(color), xy, radius, 0) 
+        # width defaults to 0, I tried giving it a thickness but the result is not great... not sure what's going on there.
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
         """

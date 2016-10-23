@@ -225,7 +225,7 @@ class Surface(object):
             xy (tuple): The position (x, y) to draw the oval, as measured from the top-left.
             size (tuple): The size (width, height) of the oval.
             color (tuple or str): The color (r, g, b) or color name.
-            align (str): How to align the outside box of the shape relative to `xy`, or relative to the drawing surface
+            align (str): How to align the outside box of the oval relative to `xy`, or relative to the drawing surface
                 if `xy` is None. Defaults to 'center'.
         """
         if len(size) != 2:
@@ -243,7 +243,7 @@ class Surface(object):
             xy (tuple): The position (x, y) to draw the circle, as measured from the top-left.
             size (int): The diameter of the circle.
             color (tuple or str): The color (r, g, b) or color name.
-            align (str): How to align the box relative to `xy`, or relative to the drawing surface
+            align (str): How to align the outside box of the circle relative to `xy`, or relative to the drawing surface
                 if `xy` is None. Defaults to 'center'.
         """
         if xy is None:
@@ -259,7 +259,7 @@ class Surface(object):
         if size <= 0:
             raise ValueError('size should be a positive integer')
 
-        #A circle is just a special case of an oval shape:
+        # A circle is just a special case of an oval shape:
         self.oval(xy, (size,size), color, align)
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):

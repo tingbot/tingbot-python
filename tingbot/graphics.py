@@ -217,7 +217,25 @@ class Surface(object):
 
         self.image(text_image, xy=xy, align=align, scale=1)
 
-    def circle(self, xy=None, radius=50, color='grey'):
+    def oval(self, xy=None, size=(100,100), color='grey', align='center'):
+        """
+        Draws an oval.
+        
+        Args:
+            xy (tuple): The position (x, y) to draw the oval, as measured from the top-left.
+            size (tuple): The size (width, height) of the oval.
+            color (tuple or str): The color (r, g, b) or color name.
+            align (str): How to align the outside box of the shape relative to `xy`, or relative to the drawing surface
+                if `xy` is None. Defaults to 'center'.
+        """
+        if len(size) != 2:
+            raise ValueError('size should be a 2-tuple')
+
+        xy = _topleft_from_aligned_xy(xy, align, size, self.size)
+
+        pygame.draw.ellipse(self.surface, _color(color), pygame.Rect(xy, size), 0) 
+
+    def circle(self, xy=None, size=50, color='grey', align='center'):
         """
         Draws a circle.
 
@@ -225,6 +243,8 @@ class Surface(object):
             xy (tuple): The position (x, y) to draw the circle, as measured from the top-left.
             radius (int): The radius of the circle.
             color (tuple or str): The color (r, g, b) or color name.
+            align (str): How to align the box relative to `xy`, or relative to the drawing surface
+                if `xy` is None. Defaults to 'center'.
         """
         if xy is None:
             raise ValueError('no value given for xy')
@@ -233,14 +253,13 @@ class Surface(object):
         elif len(xy) != 2:
             raise ValueError('xy should be a 2-tuple')
 
-        if radius <= 0:
-            raise ValueError('radius should be a positive integer')
-
-        if type(radius) is not int:
+        if type(size) is not int:
             raise ValueError('radius should be an integer')
 
-        pygame.draw.circle(self.surface, _color(color), xy, radius, 0) 
-        # width defaults to 0, I tried giving it a thickness but the result is not great... not sure what's going on there.
+        if size <= 0:
+            raise ValueError('radius should be a positive integer')
+
+        oval(self, xy, (size,size), color, align)
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
         """
@@ -425,6 +444,10 @@ class Screen(Surface):
 
     def text(self, *args, **kwargs):
         super(Screen, self).text(*args, **kwargs)
+        self.needs_update = True
+
+    def oval(self, *args, **kwargs):
+        super(Screen, self).oval(*args, **kwargs)
         self.needs_update = True
 
     def circle(self, *args, **kwargs):

@@ -235,13 +235,13 @@ class Surface(object):
 
         pygame.draw.ellipse(self.surface, _color(color), pygame.Rect(xy, size), 0) 
 
-    def circle(self, xy=None, size=50, color='grey', align='center'):
+    def circle(self, xy=None, size=100, color='grey', align='center'):
         """
         Draws a circle.
 
         Args:
             xy (tuple): The position (x, y) to draw the circle, as measured from the top-left.
-            radius (int): The radius of the circle.
+            size (int): The diameter of the circle.
             color (tuple or str): The color (r, g, b) or color name.
             align (str): How to align the box relative to `xy`, or relative to the drawing surface
                 if `xy` is None. Defaults to 'center'.
@@ -254,11 +254,12 @@ class Surface(object):
             raise ValueError('xy should be a 2-tuple')
 
         if type(size) is not int:
-            raise ValueError('radius should be an integer')
+            raise ValueError('size should be an integer')
 
         if size <= 0:
-            raise ValueError('radius should be a positive integer')
+            raise ValueError('size should be a positive integer')
 
+        #A circle is just a special case of an oval shape:
         self.oval(xy, (size,size), color, align)
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):

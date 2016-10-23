@@ -259,7 +259,7 @@ class Surface(object):
         if size <= 0:
             raise ValueError('radius should be a positive integer')
 
-        oval(self, xy, (size,size), color, align)
+        self.oval(xy, (size,size), color, align)
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
         """

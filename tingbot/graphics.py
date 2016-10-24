@@ -228,8 +228,26 @@ class Surface(object):
             align (str): How to align the outside box of the oval relative to `xy`, or relative to the drawing surface
                 if `xy` is None. Defaults to 'center'.
         """
-        if len(size) != 2:
-            raise ValueError('size should be a 2-tuple')
+        #if xy is not none, it can contain more than two values as long as the first two are valid numbers.
+        if not (hasattr(xy, '__len__')
+                and len(xy) >= 2
+                and isinstance(xy[0], numbers.Real)
+                and isinstance(xy[1], numbers.Real)):
+            raise TypeError('xy should contain two numbers')
+
+        #if size is not none, it can contain more than two values as long as the first two are valid numbers.
+        if not (hasattr(size, '__len__')
+                and len(size) >= 2
+                and isinstance(size[0], numbers.Real)
+                and isinstance(size[1], numbers.Real)):
+            raise TypeError('size should contain two numbers')
+
+        #if size is not none and contains more than two elements, the first two have to be positive numbers.
+        if not (hasattr(size, '__len__')
+                and len(size) >= 2
+                and size[0] >= 0
+                and size[1] >= 0):
+            raise TypeError('the first two elements of size should be positive numbers')
 
         xy = _topleft_from_aligned_xy(xy, align, size, self.size)
 
@@ -246,18 +264,19 @@ class Surface(object):
             align (str): How to align the outside box of the circle relative to `xy`, or relative to the drawing surface
                 if `xy` is None. Defaults to 'center'.
         """
-        if xy is None:
-            raise ValueError('no value given for xy')
-        elif type(xy) is not tuple:
-            raise ValueError('xy should be a 2-tuple')
-        elif len(xy) != 2:
-            raise ValueError('xy should be a 2-tuple')
+        #if size is not none, it can contain more than one value as long as the first one is a valid number.
+        if not (hasattr(size, '__len__')
+                and len(size) >= 1
+                and isinstance(size[0], numbers.Real)):
+            raise TypeError('size should contain a number')
 
-        if type(size) is not int:
-            raise ValueError('size should be an integer')
-
-        if size <= 0:
-            raise ValueError('size should be a positive integer')
+        #if size is not none and contains more than one element, the first one has to be is a valid number.
+        if not (hasattr(size, '__len__')
+                and len(size) >= 1
+                and size[0] >= 0):
+            raise TypeError('the first element of size should be a positive number')
+        elif size <= 0:
+            raise TypeError('size should be a positive number')
 
         # A circle is just a special case of an oval shape:
         self.oval(xy, (size,size), color, align)

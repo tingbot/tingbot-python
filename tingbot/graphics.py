@@ -217,7 +217,7 @@ class Surface(object):
 
         self.image(text_image, xy=xy, align=align, scale=1)
 
-    def oval(self, xy=None, size=(100,100), color='grey', align='center'):
+    def oval(self, xy=None, size=(150,100), color='grey', align='center'):
         """
         Draws an oval.
         
@@ -228,30 +228,36 @@ class Surface(object):
             align (str): How to align the outside box of the oval relative to `xy`, or relative to the drawing surface
                 if `xy` is None. Defaults to 'center'.
         """
-        #if xy is not none, it can contain more than two values as long as the first two are valid numbers.
-        if not (hasattr(xy, '__len__')
-                and len(xy) >= 2
-                and isinstance(xy[0], numbers.Real)
-                and isinstance(xy[1], numbers.Real)):
-            raise TypeError('xy should contain two numbers')
-
-        #if size is not none, it can contain more than two values as long as the first two are valid numbers.
-        if not (hasattr(size, '__len__')
-                and len(size) >= 2
-                and isinstance(size[0], numbers.Real)
-                and isinstance(size[1], numbers.Real)):
-            raise TypeError('size should contain two numbers')
-
-        #if size is not none and contains more than two elements, the first two have to be positive numbers.
-        if not (hasattr(size, '__len__')
-                and len(size) >= 2
-                and size[0] >= 0
-                and size[1] >= 0):
-            raise TypeError('the first two elements of size should be positive numbers')
-
-        xy = _topleft_from_aligned_xy(xy, align, size, self.size)
-
-        pygame.draw.ellipse(self.surface, _color(color), pygame.Rect(xy, size), 0) 
+        # if xy is not none
+        if xy is not None:
+            # and if it contains more than one value
+            if hasattr(xy, '__len__'):
+                # it can contain more than two values
+                 if len(xy) >= 2:
+                    # as long as the first two are valid numbers.
+                    if not(isinstance(xy[0], numbers.Real) and isinstance(xy[1], numbers.Real)):
+                        raise TypeError('xy should contain two numbers')
+        
+        # if size is not none
+        if size is not None:
+            # it has to contain at least two values:
+            if not(hasattr(size, '__len__')):
+                raise TypeError('size should contain at least two numbers')
+            # it can contain more than two values 
+            elif len(size) >= 2:
+                # as long as the first two are valid numbers
+                if not(isinstance(size[0], numbers.Real) and isinstance(size[0], numbers.Real)):
+                    raise TypeError('size should contain two numbers')
+                # and positive
+                elif size[0] < 0 or size[1] < 0:
+                    raise TypeError('the first two elements of size should be positive numbers')
+                # all checks passed, we need to extract the first two elements of size to draw the shape
+                else:
+                    xy = _topleft_from_aligned_xy(xy, align, (size[0:2]), self.size)
+                    pygame.draw.ellipse(self.surface, _color(color), pygame.Rect(xy, size[0:2]), 0) 
+            else:
+                xy = _topleft_from_aligned_xy(xy, align, size, self.size)
+                pygame.draw.ellipse(self.surface, _color(color), pygame.Rect(xy, size), 0) 
 
     def circle(self, xy=None, size=100, color='grey', align='center'):
         """
@@ -264,22 +270,23 @@ class Surface(object):
             align (str): How to align the outside box of the circle relative to `xy`, or relative to the drawing surface
                 if `xy` is None. Defaults to 'center'.
         """
-        #if size is not none, it can contain more than one value as long as the first one is a valid number.
-        if not (hasattr(size, '__len__')
-                and len(size) >= 1
-                and isinstance(size[0], numbers.Real)):
-            raise TypeError('size should contain a number')
-
-        #if size is not none and contains more than one element, the first one has to be is a valid number.
-        if not (hasattr(size, '__len__')
-                and len(size) >= 1
-                and size[0] >= 0):
-            raise TypeError('the first element of size should be a positive number')
-        elif size <= 0:
-            raise TypeError('size should be a positive number')
-
-        # A circle is just a special case of an oval shape:
-        self.oval(xy, (size,size), color, align)
+        # if size is not none
+        if size is not None:
+            # it can contain more than one value 
+            if hasattr(size, '__len__'):
+                # if it does contain more than one
+                if len(size) >= 1:
+                    # it is ok as long as the first one is a valid number.
+                    if not isinstance(size[0], numbers.Real):
+                        raise TypeError('size should contain a number')
+                    elif size[0] < 0:
+                        raise TypeError('the first element of size should be a positive number')
+                    else:
+                        # we have to only send the first element of size twice in this case to the oval method.
+                        self.oval(xy,(size[0],size[0]), color, align)
+            else:
+                # a circle is just a special case of an oval shape:
+                self.oval(xy, (size,size), color, align)
 
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
         """

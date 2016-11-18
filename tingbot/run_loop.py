@@ -115,8 +115,9 @@ class RunLoop(object):
     @classmethod
     def callAfter(cls, func):
         cls.callAfterQueue.put(func)
-        
-    def clearQueue(cls):
+
+    @classmethod
+    def emptyCallAfterQueue(cls):
         while True:
             try:
                 func = cls.callAfterQueue.get_nowait()
@@ -131,7 +132,7 @@ class RunLoop(object):
 
         while time.time() < until:
             if not self.callAfterQueue.empty():
-                self.clearQueue()
+                self.emptyCallAfterQueue()
             time.sleep(0.001)
             self._wait_callbacks()
 

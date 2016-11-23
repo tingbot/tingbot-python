@@ -1,4 +1,4 @@
-import sys, operator, time, traceback
+import sys, operator, time, traceback, Queue
 from .utils import Struct, CallbackList
 from . import error
 from .graphics import screen
@@ -40,6 +40,8 @@ class once(object):
         return f
 
 class RunLoop(object):
+
+    _call_after_queue = Queue.Queue()
 
     def __init__(self, event_handler=None):
         self._wait_callbacks = CallbackList()
@@ -109,11 +111,28 @@ class RunLoop(object):
 
     def add_after_action_callback(self, callback):
         self._after_action_callbacks.add(callback)
+        
+    @classmethod
+    def call_after(cls, func):
+        cls._call_after_queue.put(func)
 
+    @classmethod
+    def empty_call_after_queue(cls):
+        while True:
+            try:
+                func = cls._call_after_queue.get_nowait()
+                func()
+                cls._call_after_queue.task_done()
+            except Queue.Empty:
+                break
+        
+        
     def _wait(self, until):
         self._wait_callbacks()
 
         while time.time() < until:
+            if not self._call_after_queue.empty():
+                self.empty_call_after_queue()
             time.sleep(0.001)
             self._wait_callbacks()
 

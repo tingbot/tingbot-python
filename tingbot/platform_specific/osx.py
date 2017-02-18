@@ -178,7 +178,7 @@ def fixup_env():
 
     sdlmain_osx.InstallNSApplication(icon_data)
 
-    NSUserDefaults.standardUserDefaults().setBool_forKey_(True, 'ApplePersistenceIgnoreState')
+    NSUserDefaults.standardUserDefaults().setBool_forKey_(False, 'ApplePersistenceIgnoreState')
 
 button_callback = None
 

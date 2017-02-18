@@ -24,3 +24,8 @@ Tingbot has an internal run loop that it uses to schedule events.
 .. py:decorator:: once(hours=0, minutes=0, seconds=0)
 
     This decorator will call the function marked once, after the duration specified.
+    
+.. py:function:: tingbot.RunLoop.call_after(callable)
+
+    Call function ``callable`` at the next possible moment from the run loop. This allows threads
+    to communicate with the main run loop in a thread-safe fashion

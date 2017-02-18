@@ -1,5 +1,5 @@
 import sys, operator, time, traceback, Queue
-from .utils import Struct, CallbackList
+from .utils import Struct, CallbackList, deprecated_callable
 from . import error
 from .graphics import screen
 from .input import EventHandler
@@ -31,13 +31,19 @@ class every(object):
         create_timer(action=f, period=self.period, repeating=True)
         return f
 
-class once(object):
+class after(object):
     def __init__(self, hours=0, minutes=0, seconds=0):
         self.period = (hours * 60 + minutes) * 60 + seconds
 
     def __call__(self, f):
         create_timer(action=f, period=self.period, repeating=False)
         return f
+
+once = deprecated_callable(
+    after,
+    name='once',
+    version='1.1.1',
+    message='once has been renamed to \'after\'. Use \'after\' instead.')
 
 class RunLoop(object):
 

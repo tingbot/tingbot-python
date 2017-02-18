@@ -109,3 +109,44 @@ def get_resource(name):
     '''
     import os
     return os.path.join(os.path.dirname(__file__), 'resources', name)
+
+
+import warnings
+
+
+class deprecated(object):
+    '''
+    Decorates ("marks") a callable as deprecated.
+
+    Example:
+
+        @deprecated('Use after instead', version='1.1.0')
+        def once():
+            pass
+    '''
+    def __init__(self, message, version=''):
+        self.message = message
+        self.version = version
+
+    def __call__(self, func):
+        return deprecated_callable(func, message=self.message, version=self.version)
+
+
+def deprecated_callable(func, version, message='', name=None):
+    '''
+    Returns a function that will warn the caller when called, but otherwise 
+    work as normal.
+    '''
+
+    def deprecated_callable_inner(*args, **kwargs):
+        warnings.warn(
+            '{func_name} is deprecated (since {version}). {message}'.format(
+                func_name=name or func.__name__,
+                version=version,
+                message=message),
+            DeprecationWarning,
+            stacklevel=2)
+
+        return func(*args, **kwargs)
+
+    return deprecated_callable_inner

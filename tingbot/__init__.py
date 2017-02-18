@@ -19,7 +19,7 @@ except ImportError:
 from . import platform_specific, input, quit
 
 from .graphics import screen, Surface, Image
-from .run_loop import main_run_loop, create_timer, every, once, RunLoop
+from .run_loop import main_run_loop, create_timer, every, after, once, RunLoop
 from .input import touch
 from .button import press, left_button, midleft_button, midright_button, right_button
 from .web import webhook
@@ -40,7 +40,7 @@ def run(loop=None):
 
 __all__ = [
     'run', 'screen', 'Surface', 'Image', 'create_timer',
-    'every', 'once', 'RunLoop', 'touch', 'press', 'button', 'webhook',
+    'every', 'once', 'after', 'RunLoop', 'touch', 'press', 'button', 'webhook',
     'left_button', 'midleft_button', 'midright_button', 'right_button',
     'get_ip_address', 'get_wifi_cell', 'mouse_attached', 'keyboard_attached', 'joystick_attached',
 ]

@@ -217,6 +217,62 @@ class Surface(object):
 
         self.image(text_image, xy=xy, align=align, scale=1)
 
+    def oval(self, xy=None, size=(150,100), color='grey', align='center'):
+        """
+        Draws an oval.
+        
+        Args:
+            xy (tuple): The position (x, y) to draw the oval, as measured from the top-left.
+            size (tuple): The size (width, height) of the oval.
+            color (tuple or str): The color (r, g, b) or color name.
+            align (str): How to align the outside box of the oval relative to `xy`, or relative to the drawing surface
+                if `xy` is None. Defaults to 'center'.
+        """
+        if xy is not None:
+            if not (hasattr(xy, '__len__')
+                    and len(xy) >= 2
+                    and isinstance(xy[0], numbers.Real)
+                    and isinstance(xy[1], numbers.Real)):
+                raise TypeError('xy should contain two numbers')
+        
+        if not (hasattr(size, '__len__')
+                and len(size) >= 2
+                and isinstance(size[0], numbers.Real)
+                and isinstance(size[1], numbers.Real)):
+            raise TypeError('size should contain two numbers - (width, height)')
+
+        xy = _topleft_from_aligned_xy(xy, align, size, self.size)
+        color = _color(color)
+        rect = pygame.Rect(xy, size)
+
+        if len(color) == 4 and color[3] < 255:
+            # need to draw to a second buffer then blit to have transparency
+            draw_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+            pygame.draw.ellipse(draw_surface, color, pygame.Rect((0, 0), rect.size), 0)
+            self.surface.blit(draw_surface, rect)
+        else:
+            pygame.draw.ellipse(self.surface, color, rect, 0)
+
+    def circle(self, xy=None, size=100, color='grey', align='center'):
+        """
+        Draws a circle.
+
+        Args:
+            xy (tuple): The position (x, y) to draw the circle, as measured from the top-left.
+            size (int): The diameter of the circle.
+            color (tuple or str): The color (r, g, b) or color name.
+            align (str): How to align the outside box of the circle relative to `xy`, or relative to the drawing surface
+                if `xy` is None. Defaults to 'center'.
+        """
+        if isinstance(size, numbers.Real):
+            size = (size, size)
+        elif hasattr(size, '__len__') and len(size) == 2:
+            pass
+        else:
+            raise TypeError('size should be a number or a 2-tuple')
+
+        self.oval(xy=xy, size=size, color=color, align=align)
+
     def rectangle(self, xy=None, size=(100, 100), color='grey', align='center'):
         """
         Draws a rectangle.
@@ -400,6 +456,14 @@ class Screen(Surface):
 
     def text(self, *args, **kwargs):
         super(Screen, self).text(*args, **kwargs)
+        self.needs_update = True
+
+    def oval(self, *args, **kwargs):
+        super(Screen, self).oval(*args, **kwargs)
+        self.needs_update = True
+
+    def circle(self, *args, **kwargs):
+        super(Screen, self).circle(*args, **kwargs)
         self.needs_update = True
 
     def rectangle(self, *args, **kwargs):

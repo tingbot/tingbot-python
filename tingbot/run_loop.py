@@ -74,7 +74,7 @@ class RunLoop(object):
         while self.running:
             if len(self.timers) > 0:
                 try:
-                    self._wait(self.timers[-1].next_fire_time)
+                    self._wait(lambda: self.timers[-1].next_fire_time)
                 except Exception as e:
                     self._error(e)
                     continue
@@ -96,7 +96,8 @@ class RunLoop(object):
                             self.schedule(next_timer)
             else:
                 try:
-                    self._wait(time.time() + 0.1)
+                    wait_delay = time.time() + 0.1
+                    self._wait(lambda: wait_delay)
                 except Exception as e:
                     self._error(e)
 
@@ -125,12 +126,12 @@ class RunLoop(object):
                 cls._call_after_queue.task_done()
             except Queue.Empty:
                 break
-        
+
         
     def _wait(self, until):
         self._wait_callbacks()
 
-        while time.time() < until:
+        while time.time() < until():
             if not self._call_after_queue.empty():
                 self.empty_call_after_queue()
             time.sleep(0.001)

@@ -19,6 +19,7 @@ Contents:
    settings
    runloop
    hardware
+   sound
    reference
 
 Indices and tables

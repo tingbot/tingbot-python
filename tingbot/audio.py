@@ -10,12 +10,14 @@ def ensure_setup():
 
 
 def setup():
-    from platform_specific import setup_audio
-    setup_audio()
+    from . import platform_specific
+    platform_specific.setup_audio()
+    pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=4096)
 
 
 class Sound(object):
     def __init__(self, path):
+        ensure_setup()
         self._pygame_sound = pygame.mixer.Sound(path)
 
     def play(self, loop=False):

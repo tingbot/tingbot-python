@@ -25,6 +25,7 @@ from .button import press, left_button, midleft_button, midright_button, right_b
 from .web import webhook
 from .tingapp import app
 from .hardware import get_ip_address, get_wifi_cell, mouse_attached, keyboard_attached, joystick_attached
+from .audio import Sound
 
 # enable deprecation warnings
 warnings.filterwarnings("once", ".*", DeprecationWarning)
@@ -43,6 +44,7 @@ __all__ = [
     'every', 'once', 'after', 'RunLoop', 'touch', 'press', 'button', 'webhook',
     'left_button', 'midleft_button', 'midright_button', 'right_button',
     'get_ip_address', 'get_wifi_cell', 'mouse_attached', 'keyboard_attached', 'joystick_attached',
+    'Sound',
 ]
 __author__ = 'Joe Rickerby'
 __email__ = 'joerick@mac.com'

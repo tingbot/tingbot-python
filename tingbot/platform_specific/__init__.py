@@ -21,12 +21,13 @@ mouse_attached = no_op_returning(True)
 keyboard_attached = no_op_returning(True)
 joystick_attached = no_op_returning(False)
 get_wifi_cell = no_op_returning(None)
+setup_audio = no_op
 
 if sys.platform == 'darwin':
     from osx import fixup_env, create_main_surface, register_button_callback
 elif is_running_on_tingbot():
     from tingbot import (fixup_env, create_main_surface, register_button_callback,
                          set_backlight, mouse_attached, keyboard_attached, joystick_attached,
-                         get_wifi_cell)
+                         get_wifi_cell, setup_audio)
 else:
     from sdl_wrapper import fixup_env, create_main_surface, register_button_callback

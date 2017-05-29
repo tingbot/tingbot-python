@@ -155,3 +155,10 @@ def get_wifi_cell():
         # wlan0 not found
         return None
     return WifiCell(iw_data)
+
+#########
+# Audio #
+#########
+
+def setup_audio():
+    subprocess.check_call(['tbsetupaudio'])

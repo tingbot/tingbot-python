@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from docopt import docopt
-import os, textwrap, shutil, filecmp, subprocess, sys, logging, fnmatch
+import os, textwrap, shutil, filecmp, subprocess, sys, logging, fnmatch, sys
 import paramiko
 from .appdirs import AppDirs
 
@@ -179,7 +179,7 @@ def build(app_path):
     if not os.path.isfile(requirements_txt_path):
         # delete the venv if it's there and use the system python
         clean(app_path)
-        return 'python'
+        return sys.executable
 
     # check that there's a virtualenv there and that it's got a working
     # version of python

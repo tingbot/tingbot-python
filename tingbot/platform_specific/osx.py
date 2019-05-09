@@ -142,23 +142,27 @@ def create_main_surface():
     pygame.init()
     surface = pygame.display.set_mode((320, 240))
 
-    SDL_QuartzWindow = objc.lookUpClass('SDL_QuartzWindow')
+    try:
+        SDL_QuartzWindow = objc.lookUpClass('SDL_QuartzWindow')
+    except objc.nosuchclass_error:
+        # SDL2 doesn't have this class or need the runtime patch
+        pass
+    else:
+        class SDL_QuartzWindow(objc.Category(SDL_QuartzWindow)):
+            def canBecomeKeyWindow(self):
+                return True
 
-    class SDL_QuartzWindow(objc.Category(SDL_QuartzWindow)):
-        def canBecomeKeyWindow(self):
-            return True
+            def canBecomeMainWindow(self):
+                return True
 
-        def canBecomeMainWindow(self):
-            return True
+            def acceptsFirstResponder(self):
+                return True
 
-        def acceptsFirstResponder(self):
-            return True
+            def becomeFirstResponder(self):
+                return True
 
-        def becomeFirstResponder(self):
-            return True
-
-        def resignFirstResponder(self):
-            return True
+            def resignFirstResponder(self):
+                return True
 
     global window_controller
     window_controller = WindowController()

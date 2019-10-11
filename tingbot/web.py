@@ -1,10 +1,12 @@
 import zmq
 
 class webhook(object):
-    def __init__(self, hook_name):
-        ensure_setup()
-
+    def __init__(self, hook_name, hook_domain = None):
+        # Default to Tingbot's public hook domain
+        self.hook_domain = hook_domain if hook_domain is not None else "webhook.tingbot.com"
         self.hook_name = hook_name
+
+        ensure_setup(self.hook_domain)
 
     def __call__(self, f):
         register_webhook(self.hook_name, f)
@@ -14,18 +16,18 @@ is_setup = False
 zmq_subscriber = None
 registered_webhooks = {}
 
-def ensure_setup():
+def ensure_setup(hook_domain):
     global is_setup
     if not is_setup:
-        setup()
+        setup(hook_domain)
         is_setup = True
 
-def setup():
+def setup(hook_domain):
     global zmq_subscriber
 
     ctx = zmq.Context.instance()
     zmq_subscriber = ctx.socket(zmq.SUB)
-    zmq_subscriber.connect("tcp://webhook.tingbot.com:20452")
+    zmq_subscriber.connect("tcp://%s:20452" % (hook_domain))
 
     from tingbot.run_loop import main_run_loop
     main_run_loop.add_wait_callback(run_loop_wait)
